@@ -1,0 +1,2 @@
+SE a=true ENTAO b=true
+SE a=false ENTAO b=false

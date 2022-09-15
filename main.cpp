@@ -40,7 +40,7 @@ string substring(string line, int inicio, int final)
     return subs;
 }
 
-void s2(string line, int *characterStopped)
+string s2(string line, int *characterStopped)
 {
     for (int i = *characterStopped; i < line.length(); i++)
     {
@@ -49,7 +49,7 @@ void s2(string line, int *characterStopped)
             string subs = substring(line, *characterStopped, i);
             if (subs.compare("true") == 0 || subs.compare("false") == 0)
             {
-                cout << subs << " is a keyword" << endl;
+                //cout << subs << " is a keyword" << endl;
                 *characterStopped = i;
             }
             else
@@ -57,39 +57,39 @@ void s2(string line, int *characterStopped)
                 // erro
                 *characterStopped = -1;
             }
-            return;
+            return subs;
         }
         if (!isalnum(line[i]))
         {
             string subs = substring(line, *characterStopped, i);
             if (subs.compare("true") == 0 || subs.compare("false") == 0)
             {
-                cout << subs << " is a keyword" << endl;
+                //cout << subs << " is a keyword" << endl;
             }
             else
             {
-                cout << subs << " is a identifier" << endl;
+                //cout << subs << " is a identifier" << endl;
             }
             
             *characterStopped = i;
-            return;
+            return subs;
         }
     }
 
     string subs = substring(line, *characterStopped, line.length());
     if (subs.compare("true") == 0 || subs.compare("false") == 0)
     {
-        cout << subs << " is a keyword" << endl;
+        //cout << subs << " is a keyword" << endl;
     }
     else
     {
-        cout << subs << " is a identifier" << endl;
+        //cout << subs << " is a identifier" << endl;
     }
     *characterStopped = -1;
-    return;
+    return subs;
 }
 
-void s3(string line, int *characterStopped)
+string s3(string line, int *characterStopped)
 {
     for (int i = *characterStopped; i < line.length(); i++)
     {
@@ -99,86 +99,93 @@ void s3(string line, int *characterStopped)
             {
                 // print
                 string subs = substring(line, *characterStopped, i);
-                cout << subs << " is a keyword" << endl;
+                //cout << subs << " is a keyword" << endl;
                 *characterStopped = i;
-                return;
+                return subs;
             }
         }
         else
         {
             // print
             string subs = substring(line, *characterStopped, i);
-            cout << subs << " is a keyword" << endl;
+            //cout << subs << " is a keyword" << endl;
             *characterStopped = i;
-            return;
+            return subs;
         }
     }
 
     // print
     string subs = substring(line, *characterStopped, line.length());
-    cout << subs << " is a keyword" << endl;
+    //cout << subs << " is a keyword" << endl;
     *characterStopped = -1;
-    return;
+    return subs;
 }
 
-void s1(string line, int *characterStopped)
+string s1(string line, int *characterStopped)
 {
     if (islower(line[*characterStopped]))
     {
-        s2(line, characterStopped);
+        return s2(line, characterStopped);
     }
     else
     {
-        s3(line, characterStopped);
+        return s3(line, characterStopped);
     }
 }
 
-void s4(string line, int *characterStopped)
+string s4(string line, int *characterStopped)
 {
-    char op = line[*characterStopped];
+    string op (1, line[*characterStopped]);
 
     *characterStopped += 1;
-    cout << op << " is a operator" << endl;;
+    //cout << op << " is a operator" << endl;;
 
     if (*characterStopped >= line.length())
     {
         *characterStopped = -1;
-        return;
+        if (line[*characterStopped] == '&' || line[*characterStopped] == '=')   return op;
+        throw runtime_error("caractere nao reconhecido " + line[*characterStopped]);
     }
 
     if (isalpha(line[*characterStopped]))
     {
         if (islower(line[*characterStopped]))
         {
-            // print
-            return;
+            return op;
         }
     }
     throw runtime_error("error de sintaxe, esperando letra minuscula depois de operador\nlinha: " + line + "caractere" + line[*characterStopped]);
 }
 
-void s0(string line, int *characterStopped)
+string s0(string line, int *characterStopped)
 {
     if (isalpha(line[*characterStopped]))
     {
-        s1(line, characterStopped);
+        return s1(line, characterStopped);
     }
     else
     {
-        s4(line, characterStopped);
+        return s4(line, characterStopped);
     }
 }
 
-vector<string> analyzer(vector<string> lines)
+vector<vector<string>> analyzer(vector<string> lines)
 {
+    vector<vector<string>> rules;
     for (string line : lines)
     {
+        if (line.length() == 0) continue;
         int character_stopped = 0;
+        vector<string> rule;
         while (character_stopped != -1)
         {
-            s0(line, &character_stopped);
+           string token = s0(line, &character_stopped);
+           rule.push_back(token);
         }
+        rules.push_back(rule);
     }
+
+    return rules;
 }
 
 int main()
@@ -190,7 +197,17 @@ int main()
     }
     
     cout << endl;
-    vector<string> tokens = analyzer(lines);
+    vector<vector<string>> tokens = analyzer(lines);
+
+    for (int i = 0; i < tokens.size(); i++)
+    {
+        cout << "Rule " << i + 1 << ": ";
+        for (string token : tokens[i])
+        {
+            cout << token << " ";
+        }
+        cout << endl;
+    }
 
     return 0;
 }

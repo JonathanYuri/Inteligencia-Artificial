@@ -3,6 +3,8 @@
 #include <fstream>
 #include <vector>
 
+#include <utils/EveryLetterIsLower.cpp>
+
 using namespace std;
 
 vector<string> readFile(string filename)
@@ -169,6 +171,169 @@ string s0(string line, int *characterStopped)
     }
 }
 
+/*
+S8
+*/
+void S8(vector<string> rule, int *string_stopped)
+{
+    if (*string_stopped >= rule.size())
+    {
+        return;
+    }
+    if (rule[*string_stopped].compare("&") == 0)
+    {
+        *string_stopped += 1;
+        S5(rule, string_stopped);
+        return;
+    }
+    throw runtime_error("Esperando &");
+}
+
+/*
+S7
+*/
+void S7(vector<string> rule, int *string_stopped)
+{
+    if (*string_stopped >= rule.size())
+    {
+        throw runtime_error("Esperando true/false");
+    }
+    if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
+    {
+        *string_stopped += 1;
+        S8(rule, string_stopped);
+        return;
+    }
+    throw runtime_error("Esperando true/false");
+}
+
+/*
+S6
+*/
+void S6(vector<string> rule, int *string_stopped)
+{
+    if (*string_stopped >= rule.size())
+    {
+        throw runtime_error("Esperando um '='");
+    }
+    if (rule[*string_stopped].compare("=") == 0)
+    {
+        *string_stopped += 1;
+        S7(rule, string_stopped);
+        return;
+    }
+    throw runtime_error("Esperando um '='");
+}
+
+/*
+S5
+*/
+void S5(vector<string> rule, int *string_stopped)
+{
+    if (*string_stopped >= rule.size())
+    {
+        throw runtime_error("Esperando variaveis");
+    }
+    if (EveryLetterIsLower(rule[*string_stopped]))
+    {
+        *string_stopped += 1;
+        S6(rule, string_stopped);
+        return;
+    }
+    throw runtime_error("Todas as letras de uma variável devem ser minúsculas");
+}
+
+/*
+S4
+*/
+void S4(vector<string> rule, int *string_stopped)
+{
+    if (*string_stopped >= rule.size())
+    {
+        throw runtime_error("Esperando um 'ENTAO' ou '&'");
+    }
+    if (rule[*string_stopped].compare("&") == 0)
+    {
+        *string_stopped += 1;
+        S1(rule, string_stopped);
+        return;
+    }
+    if (rule[*string_stopped].compare("ENTAO") == 0)
+    {
+        *string_stopped += 1;
+        S5(rule, string_stopped);
+        return;
+    }
+}
+
+/*
+S3
+*/
+void S3(vector<string> rule, int *string_stopped)
+{
+    if (*string_stopped >= rule.size())
+    {
+        throw runtime_error("Esperando true/false");
+    }
+    if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
+    {
+        *string_stopped += 1;
+        S4(rule, string_stopped);
+        return;
+    }
+    throw runtime_error("Esperando true/false");
+}
+
+/*
+S2
+*/
+void S2(vector<string> rule, int *string_stopped)
+{
+    if (*string_stopped >= rule.size())
+    {
+        throw runtime_error("Esperando um '='");
+    }
+    if (rule[*string_stopped].compare("=") == 0)
+    {
+        *string_stopped += 1;
+        S3(rule, string_stopped);
+        return;
+    }
+    throw runtime_error("Esperando um '=' depois da variavel");
+}
+
+/*
+S1
+*/
+void S1(vector<string> rule, int *string_stopped)
+{
+    if (*string_stopped >= rule.size())
+    {
+        throw runtime_error("Esperando uma expressao depois do 'SE'");
+    }
+    if (EveryLetterIsLower(rule[*string_stopped]))
+    {
+        *string_stopped += 1;
+        S2(rule, string_stopped);
+        return;
+    }
+    throw runtime_error("Todas as letras de uma variável devem ser minúsculas");
+}
+
+/*
+S0
+*/
+void S0(vector<string> rule, int *string_stopped)
+{
+    if (rule[*string_stopped].compare("SE") == 0)
+    {
+        *string_stopped += 1;
+        S1(rule, string_stopped);
+        return;
+    }
+    throw runtime_error("error de sintaxe, esperando 'SE'");
+}
+
 vector<vector<string>> analyzer(vector<string> lines)
 {
     vector<vector<string>> rules;
@@ -209,12 +374,10 @@ int main()
         cout << endl;
     }
 
+    int string_stopped = 0;
     for (vector<string> rule : rules)
     {
-        for (string lexema : rule)
-        {
-            S0();
-        }
+        S0(rule, &string_stopped);
     }
 
     return 0;

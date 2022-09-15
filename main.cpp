@@ -197,16 +197,24 @@ int main()
     }
     
     cout << endl;
-    vector<vector<string>> tokens = analyzer(lines);
+    vector<vector<string>> rules = analyzer(lines);
 
-    for (int i = 0; i < tokens.size(); i++)
+    for (int i = 0; i < rules.size(); i++)
     {
         cout << "Rule " << i + 1 << ": ";
-        for (string token : tokens[i])
+        for (string token : rules[i])
         {
             cout << token << " ";
         }
         cout << endl;
+    }
+
+    for (vector<string> rule : rules)
+    {
+        for (string lexema : rule)
+        {
+            S0();
+        }
     }
 
     return 0;

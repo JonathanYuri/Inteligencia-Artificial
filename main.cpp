@@ -3,9 +3,17 @@
 #include <fstream>
 #include <vector>
 
-#include <utils/EveryLetterIsLower.cpp>
+#include "utils/EveryLetterIsLower.cpp"
 
 using namespace std;
+
+vector<string> variaveisSE;
+vector<string> valoresSE;
+vector<int> linhaSE;
+
+vector<string> variaveisENTAO;
+vector<string> valoresENTAO;
+vector<int> linhaENTAO;
 
 vector<string> readFile(string filename)
 {
@@ -178,12 +186,11 @@ void S8(vector<string> rule, int *string_stopped)
 {
     if (*string_stopped >= rule.size())
     {
+        *string_stopped = -1;
         return;
     }
     if (rule[*string_stopped].compare("&") == 0)
     {
-        *string_stopped += 1;
-        S5(rule, string_stopped);
         return;
     }
     throw runtime_error("Esperando &");
@@ -192,7 +199,7 @@ void S8(vector<string> rule, int *string_stopped)
 /*
 S7
 */
-void S7(vector<string> rule, int *string_stopped)
+void S7(vector<string> rule, int *string_stopped, int linha)
 {
     if (*string_stopped >= rule.size())
     {
@@ -200,6 +207,9 @@ void S7(vector<string> rule, int *string_stopped)
     }
     if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
     {
+        valoresENTAO.push_back(rule[*string_stopped]);
+        linhaENTAO.push_back(linha);
+
         *string_stopped += 1;
         S8(rule, string_stopped);
         return;
@@ -210,7 +220,7 @@ void S7(vector<string> rule, int *string_stopped)
 /*
 S6
 */
-void S6(vector<string> rule, int *string_stopped)
+void S6(vector<string> rule, int *string_stopped, int linha)
 {
     if (*string_stopped >= rule.size())
     {
@@ -219,7 +229,7 @@ void S6(vector<string> rule, int *string_stopped)
     if (rule[*string_stopped].compare("=") == 0)
     {
         *string_stopped += 1;
-        S7(rule, string_stopped);
+        S7(rule, string_stopped, linha);
         return;
     }
     throw runtime_error("Esperando um '='");
@@ -228,7 +238,7 @@ void S6(vector<string> rule, int *string_stopped)
 /*
 S5
 */
-void S5(vector<string> rule, int *string_stopped)
+void S5(vector<string> rule, int *string_stopped, int linha)
 {
     if (*string_stopped >= rule.size())
     {
@@ -236,8 +246,10 @@ void S5(vector<string> rule, int *string_stopped)
     }
     if (EveryLetterIsLower(rule[*string_stopped]))
     {
+        variaveisENTAO.push_back(rule[*string_stopped]);
+
         *string_stopped += 1;
-        S6(rule, string_stopped);
+        S6(rule, string_stopped, linha);
         return;
     }
     throw runtime_error("Todas as letras de uma variável devem ser minúsculas");
@@ -252,16 +264,8 @@ void S4(vector<string> rule, int *string_stopped)
     {
         throw runtime_error("Esperando um 'ENTAO' ou '&'");
     }
-    if (rule[*string_stopped].compare("&") == 0)
+    if (rule[*string_stopped].compare("&") == 0 || rule[*string_stopped].compare("ENTAO") == 0)
     {
-        *string_stopped += 1;
-        S1(rule, string_stopped);
-        return;
-    }
-    if (rule[*string_stopped].compare("ENTAO") == 0)
-    {
-        *string_stopped += 1;
-        S5(rule, string_stopped);
         return;
     }
 }
@@ -269,7 +273,7 @@ void S4(vector<string> rule, int *string_stopped)
 /*
 S3
 */
-void S3(vector<string> rule, int *string_stopped)
+void S3(vector<string> rule, int *string_stopped, int linha)
 {
     if (*string_stopped >= rule.size())
     {
@@ -277,6 +281,9 @@ void S3(vector<string> rule, int *string_stopped)
     }
     if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
     {
+        valoresSE.push_back(rule[*string_stopped]);
+        linhaSE.push_back(linha);
+
         *string_stopped += 1;
         S4(rule, string_stopped);
         return;
@@ -287,7 +294,7 @@ void S3(vector<string> rule, int *string_stopped)
 /*
 S2
 */
-void S2(vector<string> rule, int *string_stopped)
+void S2(vector<string> rule, int *string_stopped, int linha)
 {
     if (*string_stopped >= rule.size())
     {
@@ -296,7 +303,7 @@ void S2(vector<string> rule, int *string_stopped)
     if (rule[*string_stopped].compare("=") == 0)
     {
         *string_stopped += 1;
-        S3(rule, string_stopped);
+        S3(rule, string_stopped, linha);
         return;
     }
     throw runtime_error("Esperando um '=' depois da variavel");
@@ -305,7 +312,7 @@ void S2(vector<string> rule, int *string_stopped)
 /*
 S1
 */
-void S1(vector<string> rule, int *string_stopped)
+void S1(vector<string> rule, int *string_stopped, int linha)
 {
     if (*string_stopped >= rule.size())
     {
@@ -313,8 +320,10 @@ void S1(vector<string> rule, int *string_stopped)
     }
     if (EveryLetterIsLower(rule[*string_stopped]))
     {
+        variaveisSE.push_back(rule[*string_stopped]);
+
         *string_stopped += 1;
-        S2(rule, string_stopped);
+        S2(rule, string_stopped, linha);
         return;
     }
     throw runtime_error("Todas as letras de uma variável devem ser minúsculas");
@@ -323,23 +332,35 @@ void S1(vector<string> rule, int *string_stopped)
 /*
 S0
 */
-void S0(vector<string> rule, int *string_stopped)
+void S0(vector<string> rule, int *string_stopped, bool *entao, int linha)
 {
     if (rule[*string_stopped].compare("SE") == 0 && *string_stopped == 0)
     {
         *string_stopped += 1;
-        S1(rule, string_stopped);
+        S1(rule, string_stopped, linha);
         return;
     }
     else if (*string_stopped != 0)
     {
         if (rule[*string_stopped].compare("&") == 0)
         {
-            //func
+            *string_stopped += 1;
+            if (*entao)
+            {
+                S5(rule, string_stopped, linha);
+            }
+            else
+            {
+                S1(rule, string_stopped, linha);
+            }
+            return;
         }
         else if (rule[*string_stopped].compare("ENTAO") == 0)
         {
-            //func
+            *string_stopped += 1;
+            *entao = true;
+            S5(rule, string_stopped, linha);
+            return;
         }
     }
     throw runtime_error("error de sintaxe, esperando 'SE'");
@@ -385,10 +406,26 @@ int main()
         cout << endl;
     }
 
-    int string_stopped = 0;
-    for (vector<string> rule : rules)
+    for (int i = 0; i < rules.size(); i++)
     {
-        S0(rule, &string_stopped);
+        if (rules[i].size() == 0) continue;
+        int string_stopped = 0;
+        bool imInEntao = false;
+        while (string_stopped != -1)
+        {
+            //cout << "pos " << string_stopped << "string: " << rule[string_stopped] << endl;
+            S0(rules[i], &string_stopped, &imInEntao, i);
+        }
+    }
+
+    for (int i = 0; i < variaveisSE.size(); i++)
+    {
+        cout << "Regra " << linhaSE[i] << ": var SE: " << variaveisSE[i] << " valor: " << valoresSE[i] << endl;
+    }
+
+    for (int i = 0; i < variaveisENTAO.size(); i++)
+    {
+        cout << "Regra " << linhaENTAO[i] << ": var ENTAO: " << variaveisENTAO[i] << " valor: " << valoresENTAO[i] << endl;
     }
 
     return 0;

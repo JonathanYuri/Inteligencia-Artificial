@@ -325,11 +325,22 @@ S0
 */
 void S0(vector<string> rule, int *string_stopped)
 {
-    if (rule[*string_stopped].compare("SE") == 0)
+    if (rule[*string_stopped].compare("SE") == 0 && *string_stopped == 0)
     {
         *string_stopped += 1;
         S1(rule, string_stopped);
         return;
+    }
+    else if (*string_stopped != 0)
+    {
+        if (rule[*string_stopped].compare("&") == 0)
+        {
+            //func
+        }
+        else if (rule[*string_stopped].compare("ENTAO") == 0)
+        {
+            //func
+        }
     }
     throw runtime_error("error de sintaxe, esperando 'SE'");
 }

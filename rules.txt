@@ -1,2 +1,2 @@
-SE a=true ENTAO b=true
+SE a=true & c = true ENTAO b=true
 SE a=false ENTAO b=false

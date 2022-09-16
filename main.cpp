@@ -646,7 +646,5 @@ int main()
         cout << "FALSE";
     }
 
-    // testar novamente o false
-
     return 0;
 }

@@ -1,2 +1,9 @@
-SE a=true & c = true ENTAO b=true
-SE a=false ENTAO b=false
+SE k=true & l=true & m=true ENTAO i=true
+SE i=true & l=true & j=true ENTAO q=true
+SE c=true & d=true & e=true ENTAO b=true
+SE a=true & b=true ENTAO q=true
+SE l=true & n=true & o=true & p=true ENTAO q=true
+SE r=true & j=true & m=true ENTAO s=true
+SE g=true ENTAO f=true
+SE f=true & h=true ENTAO b=true
+SE c=true & h=true ENTAO r=true

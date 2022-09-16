@@ -7,14 +7,6 @@
 
 using namespace std;
 
-vector<string> variaveisSE;
-vector<string> valoresSE;
-vector<int> linhaSE;
-
-vector<string> variaveisENTAO;
-vector<string> valoresENTAO;
-vector<int> linhaENTAO;
-
 struct variavel{
     string nome;
     string valor;
@@ -23,6 +15,8 @@ struct variavel{
 
 vector<variavel> variavelSE;
 vector<variavel> variavelENTAO;
+
+vector<variavel> variavelMT;
 
 vector<string> readFile(string filename)
 {
@@ -216,9 +210,6 @@ void S7(vector<string> rule, int *string_stopped, int linha, variavel varENTAO)
     }
     if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
     {
-        valoresENTAO.push_back(rule[*string_stopped]);
-        linhaENTAO.push_back(linha);
-
         varENTAO.valor = rule[*string_stopped];
         varENTAO.linha = linha;
 
@@ -259,9 +250,7 @@ void S5(vector<string> rule, int *string_stopped, int linha)
         throw runtime_error("Esperando variaveis");
     }
     if (EveryLetterIsLower(rule[*string_stopped]))
-    {
-        variaveisENTAO.push_back(rule[*string_stopped]);
-        
+    {   
         variavel varENTAO;
         varENTAO.nome = rule[*string_stopped];
 
@@ -298,9 +287,6 @@ void S3(vector<string> rule, int *string_stopped, int linha, variavel varSE)
     }
     if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
     {
-        valoresSE.push_back(rule[*string_stopped]);
-        linhaSE.push_back(linha);
-
         varSE.valor = rule[*string_stopped];
         varSE.linha = linha;
 
@@ -342,8 +328,6 @@ void S1(vector<string> rule, int *string_stopped, int linha)
     }
     if (EveryLetterIsLower(rule[*string_stopped]))
     {
-        variaveisSE.push_back(rule[*string_stopped]);
-
         variavel varSE;
         varSE.nome = rule[*string_stopped];
 
@@ -384,7 +368,7 @@ void S0(vector<string> rule, int *string_stopped, bool *entao, int linha)
         {
             if (*entao) // 2 entao na msm linha
             {
-                throw runtime_error("2 ENTAO's na mesma linha");
+                throw runtime_error("2 'ENTAO' na mesma linha");
             }
             *string_stopped += 1;
             *entao = true;
@@ -412,6 +396,181 @@ vector<vector<string>> analyzer(vector<string> lines)
     }
 
     return rules;
+}
+
+bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
+{
+    // verificar minha MT
+    for (int i = 0; i < variavelMT.size(); i++)
+    {
+        if (variavelMT[i].nome.compare(objetivoVar) == 0)
+        {
+            if (variavelMT[i].valor.compare(objetivoValor) == 0)
+            {
+                variavel varMT;
+                varMT.nome = objetivoVar;
+                varMT.valor = objetivoValor;
+                varMT.linha = -1;
+
+                cout << objetivoVar << "=" << objetivoValor << endl;
+                variavelMT.push_back(varMT);
+
+                return true;
+            }
+            else
+            {
+                variavel varMT;
+                varMT.nome = objetivoVar;
+                if (variavelMT[i].valor.compare("true") == 0)
+                {
+                    varMT.valor = "true";
+                }
+                else
+                {
+                    varMT.valor = "false";
+                }
+                
+                varMT.linha = -1;
+
+                //cout << objetivoVar << "=" << objetivoValor << endl;
+                variavelMT.push_back(varMT);
+
+                return false;
+            }
+        }
+    }
+
+    // pegar todas as regras que tem o meu objetivo no entao
+    vector<int> regrasComOObjetivo;
+    for (int i = 0; i < variavelENTAO.size(); i++)
+    {
+        if (variavelENTAO[i].nome.compare(objetivoVar) == 0)
+        {
+            if (variavelENTAO[i].valor.compare(objetivoValor) == 0)
+            {
+                regrasComOObjetivo.push_back(variavelENTAO[i].linha);
+            }
+        }
+    }
+
+    for (int regra : regrasComOObjetivo)
+    {
+        vector<string> procurarVar;
+        vector<string> procurarValor;
+        
+        // pegar cada regra e colocar no vetor o que esta no SE
+        for (int i = 0; i < variavelSE.size(); i++)
+        {
+            if (variavelSE[i].linha > regra)    break;
+            if (variavelSE[i].linha == regra)
+            {
+                //cout << variavelSE[i].nome << "=" << variavelSE[i].valor;
+                procurarVar.push_back(variavelSE[i].nome);
+                procurarValor.push_back(variavelSE[i].valor);
+                // if (i + 1 < variavelSE.size() && variavelSE[i+1].linha == regra)
+                // {
+                //     cout << " & ";
+                // }
+            }
+        }
+
+        bool deuBreak = false;
+        while (procurarVar.size() != 0)
+        {
+            // cout << "ATUAL " << objetivoVar << endl << "-=-=-=-=-=" << endl;
+            string p1 = procurarVar.back();
+            procurarVar.pop_back();
+
+            string p2 = procurarValor.back();
+            procurarValor.pop_back();
+
+            // cout << "procurando " << p1 << "=" << p2 << endl;
+            bool achei = encadeamentoParaTras(p1, p2);
+            // cout << "achei " << p1 << "=";
+
+            if (achei)
+            {
+                //cout << p2 << endl;
+                continue;
+            }
+            else
+            {
+                // if (p2 == "false")
+                // {
+                //     cout << "true" << endl;
+                // }
+                // else
+                // {
+                //     cout << "false" << endl;
+                // }
+                deuBreak = true;
+                break;
+            }
+        }
+        //cout << "DEU BREAK " << deuBreak << endl;
+        if (!deuBreak)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void f3(vector<string> fact, int pos, variavel varMT)
+{
+    if (pos < fact.size())
+    {
+        throw runtime_error("erro na base de fatos");
+    }
+    varMT.linha = -1;
+    variavelMT.push_back(varMT);
+}
+
+void f2(vector<string> fact, int pos, variavel varMT)
+{
+    if (pos >= fact.size())
+    {
+        throw runtime_error("erro na base de fatos");
+    }
+    if (fact[pos].compare("true") == 0 || fact[pos].compare("false") == 0)
+    {
+        varMT.valor = fact[pos];
+        f3(fact, pos+1, varMT);
+    }
+    else
+    {
+        throw runtime_error("erro na base de fatos");
+    }
+}
+
+void f1(vector<string> fact, int pos, variavel varMT)
+{
+    if (pos >= fact.size())
+    {
+        throw runtime_error("erro na base de fatos");
+    }
+    if (fact[pos].compare("=") == 0)
+    {
+        f2(fact, pos+1, varMT);
+    }
+    else
+    {
+        throw runtime_error("erro na base de fatos");
+    }
+}
+
+void f0(vector<string> fact)
+{
+    if (EveryLetterIsLower(fact[0]))
+    {
+        variavel varMT;
+        varMT.nome = fact[0];
+        f1(fact, 1, varMT);
+    }
+    else
+    {
+        throw runtime_error("erro na base de fatos");
+    }
 }
 
 int main()
@@ -447,17 +606,7 @@ int main()
         }
     }
 
-    for (int i = 0; i < variaveisSE.size(); i++)
-    {
-        cout << "Regra " << linhaSE[i] << ": var SE: " << variaveisSE[i] << " valor: " << valoresSE[i] << endl;
-    }
-
-    for (int i = 0; i < variaveisENTAO.size(); i++)
-    {
-        cout << "Regra " << linhaENTAO[i] << ": var ENTAO: " << variaveisENTAO[i] << " valor: " << valoresENTAO[i] << endl;
-    }
-
-    cout << endl << endl;
+    cout << endl;
 
     for (int i = 0; i < variavelSE.size(); i++)
     {
@@ -467,6 +616,34 @@ int main()
     for (int i = 0; i < variavelENTAO.size(); i++)
     {
         cout << "Regra " << variavelENTAO[i].linha << ": var ENTAO: " << variavelENTAO[i].nome << " valor: " << variavelENTAO[i].valor << endl;
+    }
+
+    cout << endl;
+
+    // ler a base de fatos e interpretar os baguio
+    vector<string> facts = readFile("facts.txt");
+    vector<vector<string>> slavei = analyzer(facts);
+
+    for (vector<string> r : slavei)
+    {
+        f0(r);
+    }
+
+    cout << "MT:" << endl;
+
+    for (int i = 0; i < variavelMT.size(); i++)
+    {
+        cout << variavelMT[i].nome << "=" << variavelMT[i].valor << endl;
+    }
+
+    cout << endl;
+
+    bool achei = encadeamentoParaTras("q", "true");
+    cout << endl;
+    if (achei) {
+        cout << "TRUE";
+    } else {
+        cout << "FALSE";
     }
 
     return 0;

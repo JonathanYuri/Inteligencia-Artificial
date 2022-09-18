@@ -413,14 +413,14 @@ vector<vector<string>> analyzer(vector<string> lines)
     return rules;
 }
 
-bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
+bool encadeamentoParaTras(variavel objetivo)
 {
     // verificar minha MT
     for (int i = 0; i < variavelMT.size(); i++)
     {
-        if (variavelMT[i].nome.compare(objetivoVar) == 0)
+        if (variavelMT[i].nome.compare(objetivo.nome) == 0)
         {
-            if (variavelMT[i].valor.compare(objetivoValor) == 0)
+            if (variavelMT[i].valor.compare(objetivo.valor) == 0)
             {
                 return true;
             }
@@ -438,9 +438,9 @@ bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
     {
         for (int j = 0; j < regras[i].entao.size(); j++)
         {
-            if (regras[i].entao[j].first.nome.compare(objetivoVar) == 0)
+            if (regras[i].entao[j].first.nome.compare(objetivo.nome) == 0)
             {
-                if (regras[i].entao[j].first.valor.compare(objetivoValor) == 0)
+                if (regras[i].entao[j].first.valor.compare(objetivo.valor) == 0)
                 {
                     regrasComOObjetivo.push_back(i);
                 }
@@ -450,23 +450,23 @@ bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
 
     for (int regra : regrasComOObjetivo)
     {
-        vector<pair<string, string>> se_variaveis;
+        vector<variavel> se_variaveis;
         
         // pegar cada regra colocar no vetor o que esta no SE
         for (auto se_var : regras[regra].se)
         {
-            se_variaveis.push_back({se_var.first.nome, se_var.first.valor});
+            se_variaveis.push_back(se_var.first);
         }
 
         bool deuBreak = false;
         while (se_variaveis.size() != 0)
         {
             // cout << "ATUAL " << objetivoVar << endl << "-=-=-=-=-=" << endl;
-            pair<string, string> var = se_variaveis.back();
+            variavel var = se_variaveis.back();
             se_variaveis.pop_back();
 
             // cout << "procurando " << p1 << "=" << p2 << endl;
-            bool achei = encadeamentoParaTras(var.first, var.second);
+            bool achei = encadeamentoParaTras(var);
             // cout << "achei " << p1 << "=";
 
             if (achei)
@@ -492,10 +492,10 @@ bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
         if (!deuBreak)
         {
             variavel varMT;
-            varMT.nome = objetivoVar;
-            varMT.valor = objetivoValor;
+            varMT.nome = objetivo.nome;
+            varMT.valor = objetivo.valor;
 
-            cout << objetivoVar << "=" << objetivoValor << endl;
+            cout << objetivo.nome << "=" << objetivo.valor << endl;
             variavelMT.push_back(varMT);
             return true;
         }
@@ -634,7 +634,10 @@ int main()
 
     cout << endl;
 
-    bool achei = encadeamentoParaTras("q", "true");
+    variavel objetivo;
+    objetivo.nome = "q";
+    objetivo.valor = "true";
+    bool achei = encadeamentoParaTras(objetivo);
     cout << endl;
     if (achei) {
         cout << "TRUE";

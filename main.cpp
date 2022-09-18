@@ -453,7 +453,7 @@ bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
         vector<string> procurarVar;
         vector<string> procurarValor;
         
-        // pegar cada regra e colocar no vetor o que esta no SE
+        // pegar cada regra colocar no vetor o que esta no SE
         for (auto se_var : regras[regra].se)
         {
             procurarVar.push_back(se_var.first.nome);
@@ -599,7 +599,7 @@ int main()
         }
     }
 
-    cout << regras.size() << endl;
+    cout << endl << endl;
 
     for (int i = 0; i < regras.size(); i++)
     {
@@ -608,35 +608,15 @@ int main()
         {
             if (regras[i].se[j].second.compare("") != 0)    cout << " " << regras[i].se[j].second << " ";
             cout << regras[i].se[j].first.nome << "=" << regras[i].se[j].first.valor;
-            /*
-            if (j != regras[i].se.size() - 1) // se for o ultimo eu nao printo o &
-            {
-                cout << " & ";
-            }*/
         }
         cout << ") ENTAO (";
         for (int j = 0; j < regras[i].entao.size(); j++)
         {
             if (regras[i].entao[j].second.compare("") != 0)    cout << " " << regras[i].entao[j].second << " ";
             cout << regras[i].entao[j].first.nome << "=" << regras[i].entao[j].first.valor;
-            /*if (j != regras[i].entao.size() - 1) // se for o ultimo eu nao printo o &
-            {
-                cout << " & ";
-            }*/
         }
         cout << ")" << endl;
     }
-
-    /*
-    for (int i = 0; i < variavelSE.size(); i++)
-    {
-        cout << "Regra " << variavelSE[i].linha << ": var SE: " << variavelSE[i].nome << " valor: " << variavelSE[i].valor << endl;
-    }
-
-    for (int i = 0; i < variavelENTAO.size(); i++)
-    {
-        cout << "Regra " << variavelENTAO[i].linha << ": var ENTAO: " << variavelENTAO[i].nome << " valor: " << variavelENTAO[i].valor << endl;
-    }*/
 
     cout << endl;
 

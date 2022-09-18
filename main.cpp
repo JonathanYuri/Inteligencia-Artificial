@@ -10,11 +10,15 @@ using namespace std;
 struct variavel{
     string nome;
     string valor;
-    int linha;
 };
 
-vector<variavel> variavelSE;
-vector<variavel> variavelENTAO;
+struct regra{
+    vector<pair<variavel, string>> se;
+    vector<pair<variavel, string>> entao;
+};
+
+vector<regra> regras;
+regra regraAtual;
 
 vector<variavel> variavelMT;
 
@@ -189,6 +193,11 @@ void S8(vector<string> rule, int *string_stopped)
 {
     if (*string_stopped >= rule.size())
     {
+        regras.push_back(regraAtual);
+
+        regraAtual.se.clear();
+        regraAtual.entao.clear();
+
         *string_stopped = -1;
         return;
     }
@@ -202,7 +211,7 @@ void S8(vector<string> rule, int *string_stopped)
 /*
 S7
 */
-void S7(vector<string> rule, int *string_stopped, int linha, variavel varENTAO)
+void S7(vector<string> rule, int *string_stopped, int linha, variavel varENTAO, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -211,9 +220,11 @@ void S7(vector<string> rule, int *string_stopped, int linha, variavel varENTAO)
     if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
     {
         varENTAO.valor = rule[*string_stopped];
-        varENTAO.linha = linha;
 
-        variavelENTAO.push_back(varENTAO);
+        regraAtual.entao.push_back({varENTAO, operador});
+        //regras[linha].entao.push_back(varENTAO);
+
+        //variavelENTAO.push_back(varENTAO);
 
         *string_stopped += 1;
         S8(rule, string_stopped);
@@ -225,7 +236,7 @@ void S7(vector<string> rule, int *string_stopped, int linha, variavel varENTAO)
 /*
 S6
 */
-void S6(vector<string> rule, int *string_stopped, int linha, variavel varENTAO)
+void S6(vector<string> rule, int *string_stopped, int linha, variavel varENTAO, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -234,7 +245,7 @@ void S6(vector<string> rule, int *string_stopped, int linha, variavel varENTAO)
     if (rule[*string_stopped].compare("=") == 0)
     {
         *string_stopped += 1;
-        S7(rule, string_stopped, linha, varENTAO);
+        S7(rule, string_stopped, linha, varENTAO, operador);
         return;
     }
     throw runtime_error("Esperando um '='");
@@ -243,7 +254,7 @@ void S6(vector<string> rule, int *string_stopped, int linha, variavel varENTAO)
 /*
 S5
 */
-void S5(vector<string> rule, int *string_stopped, int linha)
+void S5(vector<string> rule, int *string_stopped, int linha, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -255,7 +266,7 @@ void S5(vector<string> rule, int *string_stopped, int linha)
         varENTAO.nome = rule[*string_stopped];
 
         *string_stopped += 1;
-        S6(rule, string_stopped, linha, varENTAO);
+        S6(rule, string_stopped, linha, varENTAO, operador);
         return;
     }
     throw runtime_error("Todas as letras de uma variável devem ser minúsculas");
@@ -279,7 +290,7 @@ void S4(vector<string> rule, int *string_stopped)
 /*
 S3
 */
-void S3(vector<string> rule, int *string_stopped, int linha, variavel varSE)
+void S3(vector<string> rule, int *string_stopped, int linha, variavel varSE, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -288,9 +299,12 @@ void S3(vector<string> rule, int *string_stopped, int linha, variavel varSE)
     if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
     {
         varSE.valor = rule[*string_stopped];
-        varSE.linha = linha;
+        //varSE.linha = linha;
 
-        variavelSE.push_back(varSE);
+        regraAtual.se.push_back({varSE, operador});
+        //regras[linha].se.push_back(varSE);
+
+        //variavelSE.push_back(varSE);
 
         *string_stopped += 1;
         S4(rule, string_stopped);
@@ -302,7 +316,7 @@ void S3(vector<string> rule, int *string_stopped, int linha, variavel varSE)
 /*
 S2
 */
-void S2(vector<string> rule, int *string_stopped, int linha, variavel varSE)
+void S2(vector<string> rule, int *string_stopped, int linha, variavel varSE, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -311,7 +325,7 @@ void S2(vector<string> rule, int *string_stopped, int linha, variavel varSE)
     if (rule[*string_stopped].compare("=") == 0)
     {
         *string_stopped += 1;
-        S3(rule, string_stopped, linha, varSE);
+        S3(rule, string_stopped, linha, varSE, operador);
         return;
     }
     throw runtime_error("Esperando um '=' depois da variavel");
@@ -320,7 +334,7 @@ void S2(vector<string> rule, int *string_stopped, int linha, variavel varSE)
 /*
 S1
 */
-void S1(vector<string> rule, int *string_stopped, int linha)
+void S1(vector<string> rule, int *string_stopped, int linha, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -332,7 +346,7 @@ void S1(vector<string> rule, int *string_stopped, int linha)
         varSE.nome = rule[*string_stopped];
 
         *string_stopped += 1;
-        S2(rule, string_stopped, linha, varSE);
+        S2(rule, string_stopped, linha, varSE, operador);
         return;
     }
     throw runtime_error("Todas as letras de uma variável devem ser minúsculas");
@@ -346,21 +360,22 @@ void S0(vector<string> rule, int *string_stopped, bool *entao, int linha)
     if (rule[*string_stopped].compare("SE") == 0 && *string_stopped == 0)
     {
         *string_stopped += 1;
-        S1(rule, string_stopped, linha);
+        S1(rule, string_stopped, linha, "");
         return;
     }
     else if (*string_stopped != 0)
     {
-        if (rule[*string_stopped].compare("&") == 0)
+        //if (rule[*string_stopped].compare("&") == 0)
+        if (rule[*string_stopped].compare("&") == 0 || rule[*string_stopped].compare("|") == 0)
         {
             *string_stopped += 1;
             if (*entao)
             {
-                S5(rule, string_stopped, linha);
+                S5(rule, string_stopped, linha, rule[*string_stopped-1]);
             }
             else
             {
-                S1(rule, string_stopped, linha);
+                S1(rule, string_stopped, linha, rule[*string_stopped-1]);
             }
             return;
         }
@@ -372,7 +387,7 @@ void S0(vector<string> rule, int *string_stopped, bool *entao, int linha)
             }
             *string_stopped += 1;
             *entao = true;
-            S5(rule, string_stopped, linha);
+            S5(rule, string_stopped, linha, "");
             return;
         }
     }
@@ -407,34 +422,10 @@ bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
         {
             if (variavelMT[i].valor.compare(objetivoValor) == 0)
             {
-                variavel varMT;
-                varMT.nome = objetivoVar;
-                varMT.valor = objetivoValor;
-                varMT.linha = -1;
-
-                cout << objetivoVar << "=" << objetivoValor << endl;
-                variavelMT.push_back(varMT);
-
                 return true;
             }
             else
             {
-                variavel varMT;
-                varMT.nome = objetivoVar;
-                if (variavelMT[i].valor.compare("true") == 0)
-                {
-                    varMT.valor = "true";
-                }
-                else
-                {
-                    varMT.valor = "false";
-                }
-                
-                varMT.linha = -1;
-
-                //cout << objetivoVar << "=" << objetivoValor << endl;
-                variavelMT.push_back(varMT);
-
                 return false;
             }
         }
@@ -442,50 +433,40 @@ bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
 
     // pegar todas as regras que tem o meu objetivo no entao
     vector<int> regrasComOObjetivo;
-    for (int i = 0; i < variavelENTAO.size(); i++)
+
+    for (int i = 0; i < regras.size(); i++)
     {
-        if (variavelENTAO[i].nome.compare(objetivoVar) == 0)
+        for (int j = 0; j < regras[i].entao.size(); j++)
         {
-            if (variavelENTAO[i].valor.compare(objetivoValor) == 0)
+            if (regras[i].entao[j].first.nome.compare(objetivoVar) == 0)
             {
-                regrasComOObjetivo.push_back(variavelENTAO[i].linha);
+                if (regras[i].entao[j].first.valor.compare(objetivoValor) == 0)
+                {
+                    regrasComOObjetivo.push_back(i);
+                }
             }
         }
     }
 
     for (int regra : regrasComOObjetivo)
     {
-        vector<string> procurarVar;
-        vector<string> procurarValor;
+        vector<pair<string, string>> se_variaveis;
         
-        // pegar cada regra e colocar no vetor o que esta no SE
-        for (int i = 0; i < variavelSE.size(); i++)
+        // pegar cada regra colocar no vetor o que esta no SE
+        for (auto se_var : regras[regra].se)
         {
-            if (variavelSE[i].linha > regra)    break;
-            if (variavelSE[i].linha == regra)
-            {
-                //cout << variavelSE[i].nome << "=" << variavelSE[i].valor;
-                procurarVar.push_back(variavelSE[i].nome);
-                procurarValor.push_back(variavelSE[i].valor);
-                // if (i + 1 < variavelSE.size() && variavelSE[i+1].linha == regra)
-                // {
-                //     cout << " & ";
-                // }
-            }
+            se_variaveis.push_back({se_var.first.nome, se_var.first.valor});
         }
 
         bool deuBreak = false;
-        while (procurarVar.size() != 0)
+        while (se_variaveis.size() != 0)
         {
             // cout << "ATUAL " << objetivoVar << endl << "-=-=-=-=-=" << endl;
-            string p1 = procurarVar.back();
-            procurarVar.pop_back();
-
-            string p2 = procurarValor.back();
-            procurarValor.pop_back();
+            pair<string, string> var = se_variaveis.back();
+            se_variaveis.pop_back();
 
             // cout << "procurando " << p1 << "=" << p2 << endl;
-            bool achei = encadeamentoParaTras(p1, p2);
+            bool achei = encadeamentoParaTras(var.first, var.second);
             // cout << "achei " << p1 << "=";
 
             if (achei)
@@ -510,6 +491,12 @@ bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
         //cout << "DEU BREAK " << deuBreak << endl;
         if (!deuBreak)
         {
+            variavel varMT;
+            varMT.nome = objetivoVar;
+            varMT.valor = objetivoValor;
+
+            cout << objetivoVar << "=" << objetivoValor << endl;
+            variavelMT.push_back(varMT);
             return true;
         }
     }
@@ -522,7 +509,7 @@ void f3(vector<string> fact, int pos, variavel varMT)
     {
         throw runtime_error("erro na base de fatos");
     }
-    varMT.linha = -1;
+    //varMT.linha = -1;
     variavelMT.push_back(varMT);
 }
 
@@ -576,14 +563,15 @@ void f0(vector<string> fact)
 int main()
 {
     vector<string> lines = readFile("rules.txt");
+    cout << "comandos: " << endl;
     for (string line : lines)
     {
         cout << line << endl;
     }
     
-    cout << endl;
     vector<vector<string>> rules = analyzer(lines);
 
+    cout << endl << "regras: " << endl;
     for (int i = 0; i < rules.size(); i++)
     {
         cout << "Rule " << i + 1 << ": ";
@@ -606,16 +594,24 @@ int main()
         }
     }
 
-    cout << endl;
+    cout << endl << endl;
 
-    for (int i = 0; i < variavelSE.size(); i++)
+    for (int i = 0; i < regras.size(); i++)
     {
-        cout << "Regra " << variavelSE[i].linha << ": var SE: " << variavelSE[i].nome << " valor: " << variavelSE[i].valor << endl;
-    }
+        cout << "Regra " << i << ": SE (";
 
-    for (int i = 0; i < variavelENTAO.size(); i++)
-    {
-        cout << "Regra " << variavelENTAO[i].linha << ": var ENTAO: " << variavelENTAO[i].nome << " valor: " << variavelENTAO[i].valor << endl;
+        for (auto regra_se : regras[i].se)
+        {
+            if (regra_se.second.compare("") != 0)    cout << " " << regra_se.second << " ";
+            cout << regra_se.first.nome << "=" << regra_se.first.valor;
+        }
+        cout << ") ENTAO (";
+        for (auto regra_entao : regras[i].entao)
+        {
+            if (regra_entao.second.compare("") != 0)    cout << " " << regra_entao.second << " ";
+            cout << regra_entao.first.nome << "=" << regra_entao.first.valor;
+        }
+        cout << ")" << endl;
     }
 
     cout << endl;

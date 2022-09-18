@@ -450,28 +450,23 @@ bool encadeamentoParaTras(string objetivoVar, string objetivoValor)
 
     for (int regra : regrasComOObjetivo)
     {
-        vector<string> procurarVar;
-        vector<string> procurarValor;
+        vector<pair<string, string>> se_variaveis;
         
         // pegar cada regra colocar no vetor o que esta no SE
         for (auto se_var : regras[regra].se)
         {
-            procurarVar.push_back(se_var.first.nome);
-            procurarValor.push_back(se_var.first.valor);
+            se_variaveis.push_back({se_var.first.nome, se_var.first.valor});
         }
 
         bool deuBreak = false;
-        while (procurarVar.size() != 0)
+        while (se_variaveis.size() != 0)
         {
             // cout << "ATUAL " << objetivoVar << endl << "-=-=-=-=-=" << endl;
-            string p1 = procurarVar.back();
-            procurarVar.pop_back();
-
-            string p2 = procurarValor.back();
-            procurarValor.pop_back();
+            pair<string, string> var = se_variaveis.back();
+            se_variaveis.pop_back();
 
             // cout << "procurando " << p1 << "=" << p2 << endl;
-            bool achei = encadeamentoParaTras(p1, p2);
+            bool achei = encadeamentoParaTras(var.first, var.second);
             // cout << "achei " << p1 << "=";
 
             if (achei)
@@ -604,16 +599,17 @@ int main()
     for (int i = 0; i < regras.size(); i++)
     {
         cout << "Regra " << i << ": SE (";
-        for (int j = 0; j < regras[i].se.size(); j++)
+
+        for (auto regra_se : regras[i].se)
         {
-            if (regras[i].se[j].second.compare("") != 0)    cout << " " << regras[i].se[j].second << " ";
-            cout << regras[i].se[j].first.nome << "=" << regras[i].se[j].first.valor;
+            if (regra_se.second.compare("") != 0)    cout << " " << regra_se.second << " ";
+            cout << regra_se.first.nome << "=" << regra_se.first.valor;
         }
         cout << ") ENTAO (";
-        for (int j = 0; j < regras[i].entao.size(); j++)
+        for (auto regra_entao : regras[i].entao)
         {
-            if (regras[i].entao[j].second.compare("") != 0)    cout << " " << regras[i].entao[j].second << " ";
-            cout << regras[i].entao[j].first.nome << "=" << regras[i].entao[j].first.valor;
+            if (regra_entao.second.compare("") != 0)    cout << " " << regra_entao.second << " ";
+            cout << regra_entao.first.nome << "=" << regra_entao.first.valor;
         }
         cout << ")" << endl;
     }

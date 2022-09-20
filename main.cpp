@@ -122,10 +122,21 @@ bool encadeamentoParaTras(variavel objetivo)
     return false;
 }
 
+void negarVariavel(variavel *var)
+{
+    if (var->valor.compare("true") == 0)
+    {
+        var->valor = "false";
+        return;
+    }
+    var->valor = "true";
+    return;
+}
+
 int main()
 {
     vector<string> lines = readFile("rules.txt");
-    cout << "comandos: " << endl;
+    cout << "\t-----COMANDOS----- " << endl << endl;
     for (string line : lines)
     {
         cout << line << endl;
@@ -184,23 +195,64 @@ int main()
         cout << MT[i].nome << "=" << MT[i].valor << endl;
     }
 
+    vector<variavel> MTantes = MT;
+
     cout << endl;
 
     variavel objetivo;
-    objetivo.nome = "q";
-    objetivo.valor = "true";
+
+    cout << "Digite o nome da variavel: ";
+    cin >> objetivo.nome;
+    cout << "Digite o valor da variavel: ";
+    cin >> objetivo.valor;
+
     bool achei = encadeamentoParaTras(objetivo);
     cout << endl;
     if (achei) {
-        cout << "TRUE";
+        cout << "**(" << objetivo.nome << "=" << objetivo.valor << ")**";
     } else {
-        cout << "FALSE";
+        if (objetivo.valor.compare("true") == 0)
+        {
+            cout << "**(" << objetivo.nome << "=false" << ")**";
+        }
+        else
+        {
+            cout << "**(" << objetivo.nome << "=true" << ")**";
+        }
     }
 
-    cout << endl << "MT ao final:" << endl;
+    cout << endl << endl << "MT ao final:" << endl;
     for (auto s : MT)
     {
         cout << s.nome << " = " << s.valor << endl;
+    }
+
+    negarVariavel(&objetivo);
+
+    /*if (objetivo.valor.compare("true") == 0)
+    {
+        objetivo.valor = "false";
+    }
+    else
+    {
+        objetivo.valor = "true";
+    }*/
+
+    // voltar a memória de trabalho
+    MT = MTantes;
+
+    bool acheiFalse = encadeamentoParaTras(objetivo);
+    if (acheiFalse == achei)
+    {
+        if (achei)
+        {
+            cout << "Contradição: variavel assumiu false e true";
+        }
+        else
+        {
+            cout << "indeterminado";
+        }
+        cout << endl;
     }
 
     // testar o false para ver se tem conflito

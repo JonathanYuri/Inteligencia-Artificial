@@ -33,6 +33,16 @@ vector<vector<string>> analyzer(vector<string> lines)
     return rules;
 }
 
+bool regra_inaplicaveis(vector<int> usouRegra)
+{
+    for (int c : usouRegra)
+    {
+        if (c == -1) continue;
+        return false;
+    }
+    return true;
+}
+
 int procurarNaMT(variavel se_var)
 {
     for (int k = 0; k < MT.size(); k++)
@@ -54,17 +64,15 @@ int procurarNaMT(variavel se_var)
     return -1;
 }
 
-bool encadeamentoParaTras(variavel objetivo)
+int encadeamentoParaTras(variavel objetivo)
 {
     // verificar minha MT
     switch (procurarNaMT(objetivo))
     {
         case 1:
-            return true;
-            break;
+            return 1;
         case 0:
-            return false;
-            break;
+            return 0;
         default:
             break;
     }
@@ -96,6 +104,8 @@ bool encadeamentoParaTras(variavel objetivo)
             se_variaveis.push_back(se_var.first);
         }
 
+        // FUNCAO PROCURAR VARIAVEIS DO SE
+
         bool deuBreak = false;
         while (se_variaveis.size() != 0)
         {
@@ -104,10 +114,10 @@ bool encadeamentoParaTras(variavel objetivo)
             se_variaveis.pop_back();
 
             // cout << "procurando " << p1 << "=" << p2 << endl;
-            bool achei = encadeamentoParaTras(var);
+            int achei = encadeamentoParaTras(var);
             // cout << "achei " << p1 << "=";
 
-            if (achei)
+            if (achei == 1)
             {
                 //cout << p2 << endl;
                 continue;
@@ -135,10 +145,15 @@ bool encadeamentoParaTras(variavel objetivo)
 
             cout << objetivo.nome << "=" << objetivo.valor << endl;
             MT.push_back(varMT);
-            return true;
+            return 1;
         }
     }
-    return false;
+    return -1;
+}
+
+int encadeamentoMisto()
+{
+    
 }
 
 int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
@@ -193,34 +208,21 @@ int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
             }
             else if (c == -1)
             {
-                // nao faco nd
+                // regra nao foi usada
             }
         }
 
-        bool deuBreak = false;
-        for (int c : usouRegra)
-        {
-            if (c == -1) continue;
-
-            deuBreak = true;
-            break;
-        }
-        
-        // nao consegui usar nenhuma regra
-        if (!deuBreak)
+        // todos == -1
+        if (regra_inaplicaveis(usouRegra))
         {
             return -1;
         }
-
         usouRegra.clear();
         encontrei = procurarNaMT(objetivo);
     }
-    if (encontrei == 1) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
+
+    if (encontrei == 1)     return 1;
+    else    return 0;
 }
 
 int main()
@@ -302,11 +304,17 @@ int main()
     
     if (escolha == 0)
     {
-        bool achei = encadeamentoParaTras(objetivo);
-        cout << endl;
-        if (achei) {
+        int achei = encadeamentoParaTras(objetivo);
+        if (achei == -1)
+        {
+            cout << "indeterminado";
+        }
+        else if (achei == 1)
+        {
             cout << "**(" << objetivo.nome << "=" << objetivo.valor << ")**";
-        } else {
+        }
+        else
+        {
             cout << "falso" << endl;
             if (objetivo.valor.compare("true") == 0)
             {
@@ -331,10 +339,10 @@ int main()
         // voltar a memória de trabalho
         MT = MTantes;
 
-        bool acheiFalse = encadeamentoParaTras(objetivo);
+        int acheiFalse = encadeamentoParaTras(objetivo);
         if (acheiFalse == achei)
         {
-            if (achei)
+            if (achei == 1 || achei == 0)
             {
                 cout << "Contradição: variavel assumiu false e true";
             }
@@ -343,6 +351,11 @@ int main()
                 cout << "indeterminado";
             }
             cout << endl;
+        }
+        else if (achei == -1)
+        {
+            cout << "errado" << endl;
+            cout << "**(" << objetivo.nome << "=" << objetivo.valor << ")**";
         }
     }
 

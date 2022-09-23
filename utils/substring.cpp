@@ -3,7 +3,7 @@
 
 using namespace std;
 
-string substring(string line, int inicio, int final)
+string Substring(string line, int inicio, int final)
 {
     string subs = "";
     for (int i = inicio; i < final; i++)

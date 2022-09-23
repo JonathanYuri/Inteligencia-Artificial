@@ -38,7 +38,7 @@ string s3(string line, int *characterStopped)
             if (islower(line[i]))
             {
                 // print
-                string subs = substring(line, *characterStopped, i);
+                string subs = Substring(line, *characterStopped, i);
                 //cout << subs << " is a keyword" << endl;
                 *characterStopped = i;
                 return subs;
@@ -47,7 +47,7 @@ string s3(string line, int *characterStopped)
         else
         {
             // print
-            string subs = substring(line, *characterStopped, i);
+            string subs = Substring(line, *characterStopped, i);
             //cout << subs << " is a keyword" << endl;
             *characterStopped = i;
             return subs;
@@ -55,7 +55,7 @@ string s3(string line, int *characterStopped)
     }
 
     // print
-    string subs = substring(line, *characterStopped, line.length());
+    string subs = Substring(line, *characterStopped, line.length());
     //cout << subs << " is a keyword" << endl;
     *characterStopped = -1;
     return subs;
@@ -67,7 +67,7 @@ string s2(string line, int *characterStopped)
     {
         if (isalpha(line[i]) && isupper(line[i]))
         {
-            string subs = substring(line, *characterStopped, i);
+            string subs = Substring(line, *characterStopped, i);
             if (subs.compare("true") == 0 || subs.compare("false") == 0)
             {
                 //cout << subs << " is a keyword" << endl;
@@ -82,7 +82,7 @@ string s2(string line, int *characterStopped)
         }
         if (!isalnum(line[i]))
         {
-            string subs = substring(line, *characterStopped, i);
+            string subs = Substring(line, *characterStopped, i);
             if (subs.compare("true") == 0 || subs.compare("false") == 0)
             {
                 //cout << subs << " is a keyword" << endl;
@@ -97,7 +97,7 @@ string s2(string line, int *characterStopped)
         }
     }
 
-    string subs = substring(line, *characterStopped, line.length());
+    string subs = Substring(line, *characterStopped, line.length());
     if (subs.compare("true") == 0 || subs.compare("false") == 0)
     {
         //cout << subs << " is a keyword" << endl;

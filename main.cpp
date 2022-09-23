@@ -4,6 +4,7 @@
 
 #include "utils/IsLower.cpp"
 #include "utils/readFile.cpp"
+#include "utils/negarVariavel.cpp"
 #include "functions/fatos.cpp"
 #include "functions/lexico.cpp"
 #include "functions/sintaticoRegras.cpp"
@@ -122,15 +123,112 @@ bool encadeamentoParaTras(variavel objetivo)
     return false;
 }
 
-void negarVariavel(variavel *var)
+//cout << "regra " << regras_N_Usadas[i] << " var: " << regras[regras_N_Usadas[i]].se[j].first.nome << "=" << regras[regras_N_Usadas[i]].se[j].first.valor << endl;
+
+int procurarNaMT(variavel se_var)
 {
-    if (var->valor.compare("true") == 0)
+    for (int k = 0; k < MT.size(); k++)
     {
-        var->valor = "false";
-        return;
+        if (MT[k].nome.compare(se_var.nome) == 0)
+        {
+            if (MT[k].valor.compare(se_var.valor) == 0)
+            {
+                // pra prox se_var
+                return 1;
+            }
+            else
+            {
+                // quebro e vou para prox regra
+                return 0;
+            }
+        }
     }
-    var->valor = "true";
-    return;
+    return -1;
+}
+
+bool encontreiObjetivo(variavel objetivo)
+{
+    if (procurarNaMT(objetivo) == 1) return true;
+    else    return false;
+}
+
+bool encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
+{
+    while (!encontreiObjetivo(objetivo))
+    {
+        if (regras_N_Usadas.size() == 0)
+        {
+            // nao tem mais regras
+            return false;
+        }
+        vector<int> usouRegra;
+        for (int i = 0; i < regras_N_Usadas.size(); i++)
+        {
+            int c = 1;
+            for (auto se_var : regras[regras_N_Usadas[i]].se)
+            {
+                int resultado = procurarNaMT(se_var.first);
+                if (resultado == 1)
+                {
+                    continue;
+                }
+                if (resultado == -1 || resultado == 0)
+                {
+                    c = resultado;
+                    break;
+                }
+            }
+
+            usouRegra.push_back(c);
+            if (c == 1)
+            {
+                // adicionar o que esta no entao para MT
+                for (auto entao_var : regras[regras_N_Usadas[i]].entao)
+                {
+                    MT.push_back(entao_var.first);
+                }
+                auto elem_to_remove = regras_N_Usadas.begin() + i;
+                regras_N_Usadas.erase(elem_to_remove);
+            }
+            else if (c == 0)
+            {
+                auto elem_to_remove = regras_N_Usadas.begin() + i;
+                regras_N_Usadas.erase(elem_to_remove);
+            }
+            else if (c == -1)
+            {
+                // nao faco nd
+            }
+        }
+
+        bool deuBreak = false;
+        for (int c : usouRegra)
+        {
+            if (c == -1) continue;
+            else
+            {
+                deuBreak = true;
+                break;
+            }
+        }
+        if (!deuBreak) // nao consegui usar nenhuma regra
+        {
+            cout << "indeterminado" << endl;
+            return false;
+        }
+        usouRegra.clear();
+    }
+
+    return true;
+
+    /*for (int i = 0; i < MT.size(); i++)
+    {
+        for (int j = 0)
+        if (MT[i].nome.compare(regras[regras_N_Usadas[i]].first.nome))
+        {
+            
+        }
+    }*/
 }
 
 int main()
@@ -206,53 +304,75 @@ int main()
     cout << "Digite o valor da variavel: ";
     cin >> objetivo.valor;
 
-    bool achei = encadeamentoParaTras(objetivo);
-    cout << endl;
-    if (achei) {
-        cout << "**(" << objetivo.nome << "=" << objetivo.valor << ")**";
-    } else {
-        if (objetivo.valor.compare("true") == 0)
-        {
-            cout << "**(" << objetivo.nome << "=false" << ")**";
-        }
-        else
-        {
-            cout << "**(" << objetivo.nome << "=true" << ")**";
-        }
-    }
-
-    cout << endl << endl << "MT ao final:" << endl;
-    for (auto s : MT)
+    cout << "digite 0 para usar o encadeamento para tras e 1 para usar o para frente" << endl;
+    int escolha = 0;
+    cin >> escolha;
+    
+    if (escolha == 0)
     {
-        cout << s.nome << " = " << s.valor << endl;
-    }
-
-    negarVariavel(&objetivo);
-
-    /*if (objetivo.valor.compare("true") == 0)
-    {
-        objetivo.valor = "false";
-    }
-    else
-    {
-        objetivo.valor = "true";
-    }*/
-
-    // voltar a memória de trabalho
-    MT = MTantes;
-
-    bool acheiFalse = encadeamentoParaTras(objetivo);
-    if (acheiFalse == achei)
-    {
-        if (achei)
-        {
-            cout << "Contradição: variavel assumiu false e true";
-        }
-        else
-        {
-            cout << "indeterminado";
-        }
+        bool achei = encadeamentoParaTras(objetivo);
         cout << endl;
+        if (achei) {
+            cout << "**(" << objetivo.nome << "=" << objetivo.valor << ")**";
+        } else {
+            if (objetivo.valor.compare("true") == 0)
+            {
+                cout << "**(" << objetivo.nome << "=false" << ")**";
+            }
+            else
+            {
+                cout << "**(" << objetivo.nome << "=true" << ")**";
+            }
+        }
+
+        cout << endl << endl << "MT ao final:" << endl;
+        for (auto s : MT)
+        {
+            cout << s.nome << " = " << s.valor << endl;
+        }
+
+        negarVariavel(&objetivo);
+
+        // voltar a memória de trabalho
+        MT = MTantes;
+
+        bool acheiFalse = encadeamentoParaTras(objetivo);
+        if (acheiFalse == achei)
+        {
+            if (achei)
+            {
+                cout << "Contradição: variavel assumiu false e true";
+            }
+            else
+            {
+                cout << "indeterminado";
+            }
+            cout << endl;
+        }
+    }
+
+    else if (escolha == 1)
+    {
+        vector<int> regrasNaoUsadas;
+
+        for (int i = 0; i < regras.size(); i++)
+        {
+            regrasNaoUsadas.push_back(i);
+        }
+        bool achei = encadeamentoParaFrente(objetivo, regrasNaoUsadas);
+        if (achei) {
+            cout << "**(" << objetivo.nome << "=" << objetivo.valor << ")**";
+        } else {
+            cout << "nao eh" << endl;
+            if (objetivo.valor.compare("true") == 0)
+            {
+                cout << "**(" << objetivo.nome << "=false" << ")**";
+            }
+            else
+            {
+                cout << "**(" << objetivo.nome << "=true" << ")**";
+            }
+        }
     }
 
     // testar o false para ver se tem conflito

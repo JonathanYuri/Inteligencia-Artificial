@@ -157,7 +157,9 @@ int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
             // nao tem mais regras
             return -1;
         }
+
         vector<int> usouRegra;
+        // testando cada regra nao usada, inicia com todas
         for (int i = 0; i < regras_N_Usadas.size(); i++)
         {
             int c = 1;
@@ -168,6 +170,7 @@ int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
                 {
                     continue;
                 }
+                // se achei que eh indeterminado tenho que deixar a regra ainda, se for falso eu descarto
                 if (resultado == -1 || resultado == 0)
                 {
                     c = resultado;
@@ -183,11 +186,13 @@ int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
                 {
                     MT.push_back(entao_var.first);
                 }
+                // descarto a regra
                 auto elem_to_remove = regras_N_Usadas.begin() + i;
                 regras_N_Usadas.erase(elem_to_remove);
             }
             else if (c == 0)
             {
+                // descarto a regra
                 auto elem_to_remove = regras_N_Usadas.begin() + i;
                 regras_N_Usadas.erase(elem_to_remove);
             }
@@ -201,25 +206,24 @@ int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
         for (int c : usouRegra)
         {
             if (c == -1) continue;
-            else
-            {
-                deuBreak = true;
-                break;
-            }
+
+            deuBreak = true;
+            break;
         }
-        if (!deuBreak) // nao consegui usar nenhuma regra
+        
+        // nao consegui usar nenhuma regra
+        if (!deuBreak)
         {
             return -1;
         }
+        
         usouRegra.clear();
         encontrei = procurarNaMT(objetivo);
     }
-    if (encontrei == 1)
-    {
+    if (encontrei == 1) {
         return 1;
     }
-    else
-    {
+    else {
         return 0;
     }
 }

@@ -33,22 +33,40 @@ vector<vector<string>> analyzer(vector<string> lines)
     return rules;
 }
 
-bool encadeamentoParaTras(variavel objetivo)
+int procurarNaMT(variavel se_var)
 {
-    // verificar minha MT
-    for (int i = 0; i < MT.size(); i++)
+    for (int k = 0; k < MT.size(); k++)
     {
-        if (MT[i].nome.compare(objetivo.nome) == 0)
+        if (MT[k].nome.compare(se_var.nome) == 0)
         {
-            if (MT[i].valor.compare(objetivo.valor) == 0)
+            if (MT[k].valor.compare(se_var.valor) == 0)
             {
-                return true;
+                // pra prox se_var
+                return 1;
             }
             else
             {
-                return false;
+                // quebro e vou para prox regra
+                return 0;
             }
         }
+    }
+    return -1;
+}
+
+bool encadeamentoParaTras(variavel objetivo)
+{
+    // verificar minha MT
+    switch (procurarNaMT(objetivo))
+    {
+        case 1:
+            return true;
+            break;
+        case 0:
+            return false;
+            break;
+        default:
+            break;
     }
 
     // pegar todas as regras que tem o meu objetivo no entao
@@ -123,29 +141,6 @@ bool encadeamentoParaTras(variavel objetivo)
     return false;
 }
 
-//cout << "regra " << regras_N_Usadas[i] << " var: " << regras[regras_N_Usadas[i]].se[j].first.nome << "=" << regras[regras_N_Usadas[i]].se[j].first.valor << endl;
-
-int procurarNaMT(variavel se_var)
-{
-    for (int k = 0; k < MT.size(); k++)
-    {
-        if (MT[k].nome.compare(se_var.nome) == 0)
-        {
-            if (MT[k].valor.compare(se_var.valor) == 0)
-            {
-                // pra prox se_var
-                return 1;
-            }
-            else
-            {
-                // quebro e vou para prox regra
-                return 0;
-            }
-        }
-    }
-    return -1;
-}
-
 int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
 {
     //while (!encontreiObjetivo(objetivo))
@@ -216,7 +211,7 @@ int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
         {
             return -1;
         }
-        
+
         usouRegra.clear();
         encontrei = procurarNaMT(objetivo);
     }
@@ -312,6 +307,7 @@ int main()
         if (achei) {
             cout << "**(" << objetivo.nome << "=" << objetivo.valor << ")**";
         } else {
+            cout << "falso" << endl;
             if (objetivo.valor.compare("true") == 0)
             {
                 cout << "**(" << objetivo.nome << "=false" << ")**";
@@ -327,6 +323,8 @@ int main()
         {
             cout << s.nome << " = " << s.valor << endl;
         }
+
+        cout << endl;
 
         negarVariavel(&objetivo);
 

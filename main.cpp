@@ -146,20 +146,16 @@ int procurarNaMT(variavel se_var)
     return -1;
 }
 
-bool encontreiObjetivo(variavel objetivo)
+int encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
 {
-    if (procurarNaMT(objetivo) == 1) return true;
-    else    return false;
-}
-
-bool encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
-{
-    while (!encontreiObjetivo(objetivo))
+    //while (!encontreiObjetivo(objetivo))
+    int encontrei = procurarNaMT(objetivo);
+    while (encontrei == -1)
     {
         if (regras_N_Usadas.size() == 0)
         {
             // nao tem mais regras
-            return false;
+            return -1;
         }
         vector<int> usouRegra;
         for (int i = 0; i < regras_N_Usadas.size(); i++)
@@ -213,22 +209,19 @@ bool encadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
         }
         if (!deuBreak) // nao consegui usar nenhuma regra
         {
-            cout << "indeterminado" << endl;
-            return false;
+            return -1;
         }
         usouRegra.clear();
+        encontrei = procurarNaMT(objetivo);
     }
-
-    return true;
-
-    /*for (int i = 0; i < MT.size(); i++)
+    if (encontrei == 1)
     {
-        for (int j = 0)
-        if (MT[i].nome.compare(regras[regras_N_Usadas[i]].first.nome))
-        {
-            
-        }
-    }*/
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int main()
@@ -359,11 +352,19 @@ int main()
         {
             regrasNaoUsadas.push_back(i);
         }
-        bool achei = encadeamentoParaFrente(objetivo, regrasNaoUsadas);
-        if (achei) {
+        int achei = encadeamentoParaFrente(objetivo, regrasNaoUsadas);
+        if (achei == -1)
+        {
+            cout << "indeterminado";
+        }
+        else if (achei == 1)
+        {
+            cout << "verdadeiro" << endl;
             cout << "**(" << objetivo.nome << "=" << objetivo.valor << ")**";
-        } else {
-            cout << "nao eh" << endl;
+        }
+        else
+        {
+            cout << "falso" << endl;
             if (objetivo.valor.compare("true") == 0)
             {
                 cout << "**(" << objetivo.nome << "=false" << ")**";

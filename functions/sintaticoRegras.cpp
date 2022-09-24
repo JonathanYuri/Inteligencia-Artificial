@@ -9,7 +9,7 @@ using namespace std;
 
 regra regraAtual;
 
-regra atual()
+regra ObterRegraAtual()
 {
     regra r = regraAtual;
     regraAtual.se.clear();
@@ -17,15 +17,10 @@ regra atual()
     return r;
 }
 
-void S8(vector<string> rule, int *string_stopped)
+void ChecarFinalOuContinuar(vector<string> rule, int *string_stopped)
 {
     if (*string_stopped >= rule.size())
     {
-        //regras.push_back(regraAtual);
-
-        // regraAtual.se.clear();
-        // regraAtual.entao.clear();
-
         *string_stopped = -1;
         return;
     }
@@ -36,7 +31,7 @@ void S8(vector<string> rule, int *string_stopped)
     throw runtime_error("Esperando &");
 }
 
-void S7(vector<string> rule, int *string_stopped, int linha, variavel varENTAO, string operador)
+void ReconhecerValorNoEntao(vector<string> rule, int *string_stopped, int linha, variavel varENTAO, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -45,20 +40,16 @@ void S7(vector<string> rule, int *string_stopped, int linha, variavel varENTAO, 
     if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
     {
         varENTAO.valor = rule[*string_stopped];
-
         regraAtual.entao.push_back({varENTAO, operador});
-        //regras[linha].entao.push_back(varENTAO);
-
-        //variavelENTAO.push_back(varENTAO);
-
+        
         *string_stopped += 1;
-        S8(rule, string_stopped);
+        ChecarFinalOuContinuar(rule, string_stopped);
         return;
     }
     throw runtime_error("Esperando true/false");
 }
 
-void S6(vector<string> rule, int *string_stopped, int linha, variavel varENTAO, string operador)
+void ReconhecerOperadorNoEntao(vector<string> rule, int *string_stopped, int linha, variavel varENTAO, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -67,13 +58,13 @@ void S6(vector<string> rule, int *string_stopped, int linha, variavel varENTAO, 
     if (rule[*string_stopped].compare("=") == 0)
     {
         *string_stopped += 1;
-        S7(rule, string_stopped, linha, varENTAO, operador);
+        ReconhecerValorNoEntao(rule, string_stopped, linha, varENTAO, operador);
         return;
     }
     throw runtime_error("Esperando um '='");
 }
 
-void S5(vector<string> rule, int *string_stopped, int linha, string operador)
+void ReconhecerVariavelNoEntao(vector<string> rule, int *string_stopped, int linha, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -85,13 +76,13 @@ void S5(vector<string> rule, int *string_stopped, int linha, string operador)
         varENTAO.nome = rule[*string_stopped];
 
         *string_stopped += 1;
-        S6(rule, string_stopped, linha, varENTAO, operador);
+        ReconhecerOperadorNoEntao(rule, string_stopped, linha, varENTAO, operador);
         return;
     }
     throw runtime_error("Todas as letras de uma variável devem ser minúsculas");
 }
 
-void S4(vector<string> rule, int *string_stopped)
+void ChecarEOuEntao(vector<string> rule, int *string_stopped)
 {
     if (*string_stopped >= rule.size())
     {
@@ -103,7 +94,7 @@ void S4(vector<string> rule, int *string_stopped)
     }
 }
 
-void S3(vector<string> rule, int *string_stopped, int linha, variavel varSE, string operador)
+void ReconhecerValorNoSe(vector<string> rule, int *string_stopped, int linha, variavel varSE, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -112,21 +103,16 @@ void S3(vector<string> rule, int *string_stopped, int linha, variavel varSE, str
     if (rule[*string_stopped].compare("true") == 0 || rule[*string_stopped].compare("false") == 0)
     {
         varSE.valor = rule[*string_stopped];
-        //varSE.linha = linha;
-
         regraAtual.se.push_back({varSE, operador});
-        //regras[linha].se.push_back(varSE);
-
-        //variavelSE.push_back(varSE);
 
         *string_stopped += 1;
-        S4(rule, string_stopped);
+        ChecarEOuEntao(rule, string_stopped);
         return;
     }
     throw runtime_error("Esperando true/false");
 }
 
-void S2(vector<string> rule, int *string_stopped, int linha, variavel varSE, string operador)
+void ReconhecerOperadorNoSe(vector<string> rule, int *string_stopped, int linha, variavel varSE, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -135,13 +121,13 @@ void S2(vector<string> rule, int *string_stopped, int linha, variavel varSE, str
     if (rule[*string_stopped].compare("=") == 0)
     {
         *string_stopped += 1;
-        S3(rule, string_stopped, linha, varSE, operador);
+        ReconhecerValorNoSe(rule, string_stopped, linha, varSE, operador);
         return;
     }
     throw runtime_error("Esperando um '=' depois da variavel");
 }
 
-void S1(vector<string> rule, int *string_stopped, int linha, string operador)
+void ReconhecerVariavelNoSe(vector<string> rule, int *string_stopped, int linha, string operador)
 {
     if (*string_stopped >= rule.size())
     {
@@ -153,47 +139,45 @@ void S1(vector<string> rule, int *string_stopped, int linha, string operador)
         varSE.nome = rule[*string_stopped];
 
         *string_stopped += 1;
-        S2(rule, string_stopped, linha, varSE, operador);
+        ReconhecerOperadorNoSe(rule, string_stopped, linha, varSE, operador);
         return;
     }
     throw runtime_error("Todas as letras de uma variável devem ser minúsculas");
 }
 
-void S0(vector<string> rule, int *string_stopped, bool *entao, int linha)
+void ChecarSeOuEntaoEncaminharOperadores(vector<string> rule, int *string_stopped, bool *entao, int linha)
 {
     if (rule[*string_stopped].compare("SE") == 0 && *string_stopped == 0)
     {
         *string_stopped += 1;
-        S1(rule, string_stopped, linha, "");
+        ReconhecerVariavelNoSe(rule, string_stopped, linha, "");
         return;
     }
     else if (*string_stopped != 0)
     {
-        //if (rule[*string_stopped].compare("&") == 0)
         if (rule[*string_stopped].compare("&") == 0 || rule[*string_stopped].compare("|") == 0)
         {
             *string_stopped += 1;
             if (*entao)
             {
-                S5(rule, string_stopped, linha, rule[*string_stopped-1]);
+                ReconhecerVariavelNoEntao(rule, string_stopped, linha, rule[*string_stopped-1]);
             }
             else
             {
-                S1(rule, string_stopped, linha, rule[*string_stopped-1]);
+                ReconhecerVariavelNoSe(rule, string_stopped, linha, rule[*string_stopped-1]);
             }
             return;
         }
         else if (rule[*string_stopped].compare("ENTAO") == 0)
         {
-            if (*entao) // 2 entao na msm linha
-            {
-                throw runtime_error("2 'ENTAO' na mesma linha");
-            }
+            if (*entao)     throw runtime_error("2 'ENTAO' na mesma linha");
+
             *string_stopped += 1;
             *entao = true;
-            S5(rule, string_stopped, linha, "");
+            ReconhecerVariavelNoEntao(rule, string_stopped, linha, "");
             return;
         }
     }
+    
     throw runtime_error("error de sintaxe, esperando 'SE'");
 }

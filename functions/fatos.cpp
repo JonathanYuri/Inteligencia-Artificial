@@ -6,7 +6,7 @@
 
 using namespace std;
 
-variavel f3(vector<string> fact, int pos, variavel varMT)
+variavel ReconhecerFinaldeLinha(vector<string> fact, int pos, variavel varMT)
 {
     if (pos < fact.size())
     {
@@ -16,7 +16,7 @@ variavel f3(vector<string> fact, int pos, variavel varMT)
     //variavelMT.push_back(varMT);
 }
 
-variavel f2(vector<string> fact, int pos, variavel varMT)
+variavel ReconhecerValor(vector<string> fact, int pos, variavel varMT)
 {
     if (pos >= fact.size())
     {
@@ -25,7 +25,7 @@ variavel f2(vector<string> fact, int pos, variavel varMT)
     if (fact[pos].compare("true") == 0 || fact[pos].compare("false") == 0)
     {
         varMT.valor = fact[pos];
-        return f3(fact, pos+1, varMT);
+        return ReconhecerFinaldeLinha(fact, pos+1, varMT);
     }
     else
     {
@@ -33,7 +33,7 @@ variavel f2(vector<string> fact, int pos, variavel varMT)
     }
 }
 
-variavel f1(vector<string> fact, int pos, variavel varMT)
+variavel ReconhecerOperador(vector<string> fact, int pos, variavel varMT)
 {
     if (pos >= fact.size())
     {
@@ -41,7 +41,7 @@ variavel f1(vector<string> fact, int pos, variavel varMT)
     }
     if (fact[pos].compare("=") == 0)
     {
-        return f2(fact, pos+1, varMT);
+        return ReconhecerValor(fact, pos+1, varMT);
     }
     else
     {
@@ -49,13 +49,13 @@ variavel f1(vector<string> fact, int pos, variavel varMT)
     }
 }
 
-variavel f0(vector<string> fact)
+variavel ReconhecerVariavel(vector<string> fact)
 {
     if (EveryLetterIsLower(fact[0]))
     {
         variavel varMT;
         varMT.nome = fact[0];
-        return f1(fact, 1, varMT);
+        return ReconhecerOperador(fact, 1, varMT);
     }
     else
     {

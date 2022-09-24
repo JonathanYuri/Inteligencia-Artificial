@@ -1,12 +1,12 @@
 #include "types.h"
 
-void negarVariavel(variavel *var)
+variavel NegarVariavel(variavel var)
 {
-    if (var->valor.compare("true") == 0)
+    if (var.valor.compare("true") == 0)
     {
-        var->valor = "false";
-        return;
+        var.valor = "false";
+        return var;
     }
-    var->valor = "true";
-    return;
+    var.valor = "true";
+    return var;
 }

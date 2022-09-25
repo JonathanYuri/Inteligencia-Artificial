@@ -48,7 +48,7 @@ bool Regra_inaplicaveis(vector<int> usouRegra)
     return true;
 }
 
-int ProcurarNaMT(variavel se_var)
+int AchouNaMT(variavel se_var)
 {
     for (int k = 0; k < MT.size(); k++)
     {
@@ -61,15 +61,10 @@ int ProcurarNaMT(variavel se_var)
     return -1;
 }
 
-int ProcurarVariaveisDoSe()
-{
-
-}
-
 int EncadeamentoParaTras(variavel objetivo)
 {
     // verificar minha MT
-    switch (ProcurarNaMT(objetivo))
+    switch (AchouNaMT(objetivo))
     {
         case 1:
             return 1;
@@ -142,7 +137,7 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
         bool deuBreak = false;
         for (auto se_var : regras[regras_N_Usadas[i]].se)
         {
-            int resultado = ProcurarNaMT(se_var.first);
+            int resultado = AchouNaMT(se_var.first);
             if (resultado == 1)     continue;
             else if (resultado == 0)
             {
@@ -186,14 +181,24 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
                 MT.push_back(entao_var.first);
             }
         }
+
+        switch (AchouNaMT(objetivo))
+        {
+            case 1:
+                return 1;
+            case 0:
+                return 0;
+            default:
+                break;
+        }
     }
 
-    return ProcurarNaMT(objetivo);
+    return -1;
 }
 
 int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
 {
-    int encontrei = ProcurarNaMT(objetivo);
+    int encontrei = AchouNaMT(objetivo);
     while (encontrei == -1)
     {
         if (regras_N_Usadas.size() == 0)
@@ -209,7 +214,7 @@ int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
             int c = 1;
             for (auto se_var : regras[regras_N_Usadas[i]].se)
             {
-                int resultado = ProcurarNaMT(se_var.first);
+                int resultado = AchouNaMT(se_var.first);
                 if (resultado == 1)
                 {
                     continue;
@@ -252,7 +257,7 @@ int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
             return -1;
         }
         usouRegra.clear();
-        encontrei = ProcurarNaMT(objetivo);
+        encontrei = AchouNaMT(objetivo);
     }
 
     if (encontrei == 1)     return 1;

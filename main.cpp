@@ -276,6 +276,7 @@ void ChecarObjetivo(int escolha, variavel objetivo)
         variavel objetivo2 = NegarVariavel(objetivo);
 
         // voltar a memória de trabalho
+        vector<variavel> MTprimeira = MT;
         MT = MTantes;
 
         int acheiFalse = EncadeamentoParaTras(objetivo2);
@@ -300,6 +301,8 @@ void ChecarObjetivo(int escolha, variavel objetivo)
             else                cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
         }
 
+        if (achei == 1)     MT = MTprimeira;
+        if (achei == 1 && acheiFalse == 1)  MT.push_back(objetivo2);
     }
 
     else if (escolha == 1)

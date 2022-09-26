@@ -48,17 +48,29 @@ bool Regra_inaplicaveis(vector<int> usouRegra)
     return true;
 }
 
-int AchouNaMT(variavel se_var)
+int AchouNaMT(variavel var)
 {
     for (int k = 0; k < MT.size(); k++)
     {
-        if (MT[k].nome.compare(se_var.nome) == 0)
+        if (MT[k].nome.compare(var.nome) == 0)
         {
-            if (MT[k].valor.compare(se_var.valor) == 0)     return 1;
+            if (MT[k].valor.compare(var.valor) == 0)     return 1;
             else    return 0;
         }
     }
     return -1;
+}
+
+void AdicionarNaMT(variavel var)
+{
+    switch (AchouNaMT(var))
+    {
+        case -1:
+            MT.push_back(var);
+            return;
+        default:
+            return;
+    }
 }
 
 int EncadeamentoParaTras(variavel objetivo)
@@ -123,7 +135,7 @@ int EncadeamentoParaTras(variavel objetivo)
             varMT.nome = objetivo.nome;
             varMT.valor = objetivo.valor;
 
-            MT.push_back(varMT);
+            AdicionarNaMT(varMT);
             return 1;
         }
     }
@@ -150,7 +162,7 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
                 if (resultado == 0)
                 {
                     variavel adc = NegarVariavel(se_var.first);
-                    MT.push_back(adc);
+                    AdicionarNaMT(adc);
                     deuBreak = true;
                     break;
                 }
@@ -159,12 +171,12 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
                 {
                     variavel adc = se_var.first;
                     adc.valor = "indeterminado";
-                    MT.push_back(adc);
+                    AdicionarNaMT(adc);
                     deuBreak = true;
                     break;
                 }
 
-                MT.push_back(se_var.first);
+                AdicionarNaMT(se_var.first);
             }
         }
 
@@ -178,7 +190,7 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
             // adicionar o que esta no entao na MT
             for (auto entao_var : regras[regras_N_Usadas[i]].entao)
             {
-                MT.push_back(entao_var.first);
+                AdicionarNaMT(entao_var.first);
             }
         }
 
@@ -233,7 +245,7 @@ int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
                 // adicionar o que esta no entao para MT
                 for (auto entao_var : regras[regras_N_Usadas[i]].entao)
                 {
-                    MT.push_back(entao_var.first);
+                    AdicionarNaMT(entao_var.first);
                 }
                 // descarto a regra
                 auto elem_to_remove = regras_N_Usadas.begin() + i;
@@ -264,14 +276,15 @@ int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
     else    return 0;
 }
 
-void ChecarObjetivo(int escolha, variavel objetivo)
+bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
 {
     vector<variavel> MTantes = MT;
 
     cout << "-------------------";
+    int achei = 0, acheiFalse = 0;
     if (escolha == 0)
     {
-        int achei = EncadeamentoParaTras(objetivo);
+        achei = EncadeamentoParaTras(objetivo);
 
         variavel objetivo2 = NegarVariavel(objetivo);
 
@@ -279,7 +292,7 @@ void ChecarObjetivo(int escolha, variavel objetivo)
         vector<variavel> MTprimeira = MT;
         MT = MTantes;
 
-        int acheiFalse = EncadeamentoParaTras(objetivo2);
+        acheiFalse = EncadeamentoParaTras(objetivo2);
 
         if (achei == -1 && acheiFalse == -1)    cout << "objetivo indeterminado";
         else if (acheiFalse == -1)
@@ -302,7 +315,7 @@ void ChecarObjetivo(int escolha, variavel objetivo)
         }
 
         if (achei == 1)     MT = MTprimeira;
-        if (achei == 1 && acheiFalse == 1)  MT.push_back(objetivo2);
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(objetivo2);
     }
 
     else if (escolha == 1)
@@ -315,7 +328,7 @@ void ChecarObjetivo(int escolha, variavel objetivo)
 
         variavel objetivo2 = NegarVariavel(objetivo);
 
-        int achei = EncadeamentoParaFrente(objetivo, regrasNaoUsadas);
+        achei = EncadeamentoParaFrente(objetivo, regrasNaoUsadas);
         
         if (achei == -1)        cout << "objetivo indeterminado";
         else if (achei == 1)    cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
@@ -332,7 +345,7 @@ void ChecarObjetivo(int escolha, variavel objetivo)
 
         variavel objetivo2 = NegarVariavel(objetivo);
 
-        int achei = EncadeamentoMisto(objetivo, regrasNaoUsadas);
+        achei = EncadeamentoMisto(objetivo, regrasNaoUsadas);
         if (achei == -1)        cout << "objetivo indeterminado";
         else if (achei == 1)    cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
         else                    cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
@@ -344,6 +357,8 @@ void ChecarObjetivo(int escolha, variavel objetivo)
     {
         cout << var.nome << " = " << var.valor << endl;
     }
+
+    return achei == 1;
 }
 
 int main()
@@ -369,31 +384,61 @@ int main()
     vector<string> facts = readFile("facts.txt");
     vector<vector<string>> linhasFatos = analyzer(facts);
 
-    for (vector<string> r : linhasFatos)    MT.push_back(ReconhecerVariavel(r));
+    for (vector<string> r : linhasFatos)    AdicionarNaMT(ReconhecerVariavel(r));
 
-    variavel objetivo;
+    int qntVariaveis = 0;
+    cout << "Digite quantas variaveis quer testar: ";
+    cin >> qntVariaveis;
 
-    cout << "Digite o nome da variavel: ";
-    cin >> objetivo.nome;
-    cout << "Digite o valor da variavel: ";
-    cin >> objetivo.valor;
-
-    if (objetivo.valor.compare("true") != 0 && objetivo.valor.compare("false") != 0)
+    if (qntVariaveis == 0)
     {
-        throw runtime_error("objetivo deve ser true ou false");
-    }
-    if (!EveryLetterIsLower(objetivo.nome))
-    {
-        throw runtime_error("variavel objetivo deve ter todas as letras minusculas");
+        cout << "!!!! Digite um numero maior que 0 !!!!";
+        return 0;
     }
 
-    cout << "Digite:\n0 para usar o encadeamento para tras\n1 para usar o para frente\n2 para usar o misto" << endl;
-    int escolha = 0;
-    cin >> escolha;
-    
-    ChecarObjetivo(escolha, objetivo);
+    vector<variavel> MTantes = MT;
 
-    // testar o false para ver se tem conflito
+    vector<variavel> objetivos;
+    bool objetivosVerdadeiros = true;
+    for (int i = 0; i < qntVariaveis; i++)
+    {
+        MT = MTantes;
+        variavel objetivo;
+
+        cout << "Digite o nome da variavel: ";
+        cin >> objetivo.nome;
+        cout << "Digite o valor da variavel: ";
+        cin >> objetivo.valor;
+
+        if (objetivo.valor.compare("true") != 0 && objetivo.valor.compare("false") != 0)
+        {
+            throw runtime_error("objetivo deve ser true ou false");
+        }
+        if (!EveryLetterIsLower(objetivo.nome))
+        {
+            throw runtime_error("variavel objetivo deve ter todas as letras minusculas");
+        }
+
+        objetivos.push_back(objetivo);
+
+        cout << "Digite:\n0 para usar o encadeamento para tras\n1 para usar o para frente\n2 para usar o misto" << endl << endl;
+        int escolha = 0;
+        cin >> escolha;
+        
+        bool objVerdadeiro = ObjetivoVerdadeiro(escolha, objetivo);
+        if (!objVerdadeiro)     objetivosVerdadeiros = false;
+        cout << endl;
+    }
+
+    cout << "-------------------";
+    for (int i = 0; i < objetivos.size(); i++)
+    {
+        cout << objetivos[i].nome << "=" << objetivos[i].valor;
+        if (i != objetivos.size() - 1)      cout << " & ";
+    }
+    if (objetivosVerdadeiros)   cout << " = TRUE";
+    else    cout << " = FALSE";
+    cout << "-------------------";
 
     return 0;
 }

@@ -361,14 +361,13 @@ bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
 
         variavel objetivo2 = NegarVariavel(objetivo);
 
-        if (achei == 0) objetivo2.valor = objetivo.valor; // procurar pelo objetivo
-        acheiFalse = EncadeamentoParaTras(objetivo2);
-        
-        if (achei == 0)
-        {
-            int troca = acheiFalse;
+        // procurar pelo objetivo
+        if (achei == 0) {
             acheiFalse = 1;
-            achei = troca;
+            achei = EncadeamentoParaTras(objetivo);
+        }
+        else{
+            acheiFalse = EncadeamentoParaTras(objetivo2);
         }
 
         ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
@@ -392,14 +391,12 @@ bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
         vector<variavel> MTprimeira = MT;
         MT = MTantes;
 
-        if (achei == 0) objetivo2.valor = objetivo.valor; // procurar pelo objetivo
-        acheiFalse = EncadeamentoParaTras(objetivo2);
-
-        if (achei == 0)
-        {
-            int troca = acheiFalse;
+        if (achei == 0) {
             acheiFalse = 1;
-            achei = troca;
+            achei = EncadeamentoParaTras(objetivo);
+        }
+        else{
+            acheiFalse = EncadeamentoParaTras(objetivo2);
         }
 
         ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);

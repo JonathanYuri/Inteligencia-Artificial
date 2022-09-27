@@ -276,6 +276,51 @@ int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
     else    return 0;
 }
 
+void ChecarContradicao(variavel objetivo, variavel objetivo2, int achei, int acheiFalse)
+{
+    if (achei == 1 && acheiFalse == 1) // a=true (1) e a=false (1)
+    {
+        cout << "contradicao: objetivo atribuiu valor true e false";
+    }
+    else if (achei == 0 && acheiFalse == 0) // a=true (0) e a=false (0)
+    {
+        cout << "contradicao: objetivo atribuiu valor true e false";
+    }
+    else if (achei == -1 && acheiFalse == -1)
+    {
+        cout << "objetivo indeterminado";
+    }
+
+    else if (achei == 1 && acheiFalse == 0)
+    {
+        cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
+    }
+    else if (achei == 1 && acheiFalse == -1)
+    {
+        cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
+    }
+
+    else if (achei == 0 && acheiFalse == 1)
+    {
+        cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
+    }
+    // R
+    else if (achei == 0 && acheiFalse == -1)
+    {
+        cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
+    }
+
+    // R
+    else if (achei == -1 && acheiFalse == 1)
+    {
+        cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
+    }
+    else if (achei == -1 && acheiFalse == 0)
+    {
+        cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
+    }
+}
+
 bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
 {
     vector<variavel> MTantes = MT;
@@ -294,25 +339,7 @@ bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
 
         acheiFalse = EncadeamentoParaTras(objetivo2);
 
-        if (achei == -1 && acheiFalse == -1)    cout << "objetivo indeterminado";
-        else if (acheiFalse == -1)
-        {
-            if (achei == 1)             cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
-            else if (achei == 0)        cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
-        }
-        else if (achei == -1)
-        {
-            if (acheiFalse == 1)        cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
-            else if (acheiFalse == 0)   cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
-        }
-        else if (achei == acheiFalse)       cout << "contradicao: objetivo atribuiu valor true e false";
-        else
-        {
-            // q = true (1)
-            // q = false (0)
-            if (achei == 1)     cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
-            else                cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
-        }
+        ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
 
         if (achei == 1)     MT = MTprimeira;
         if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(objetivo2);
@@ -321,34 +348,64 @@ bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
     else if (escolha == 1)
     {
         vector<int> regrasNaoUsadas;
+        vector<int> r;
         for (int i = 0; i < regras.size(); i++)
         {
             regrasNaoUsadas.push_back(i);
         }
 
+        achei = EncadeamentoParaFrente(objetivo, regrasNaoUsadas);
+
+        vector<variavel> MTprimeira = MT;
+        MT = MTantes;
+
         variavel objetivo2 = NegarVariavel(objetivo);
 
-        achei = EncadeamentoParaFrente(objetivo, regrasNaoUsadas);
+        if (achei == 0) objetivo2.valor = objetivo.valor; // procurar pelo objetivo
+        acheiFalse = EncadeamentoParaTras(objetivo2);
         
-        if (achei == -1)        cout << "objetivo indeterminado";
-        else if (achei == 1)    cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
-        else                    cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
+        if (achei == 0)
+        {
+            int troca = acheiFalse;
+            acheiFalse = 1;
+            achei = troca;
+        }
+
+        ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
+
+        if (achei == 1)     MT = MTprimeira;
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(objetivo2);
     }
 
     else if (escolha == 2)
     {
         vector<int> regrasNaoUsadas;
+        vector<int> r;
         for (int i = 0; i < regras.size(); i++)
         {
             regrasNaoUsadas.push_back(i);
         }
 
+        achei = EncadeamentoMisto(objetivo, regrasNaoUsadas);
         variavel objetivo2 = NegarVariavel(objetivo);
 
-        achei = EncadeamentoMisto(objetivo, regrasNaoUsadas);
-        if (achei == -1)        cout << "objetivo indeterminado";
-        else if (achei == 1)    cout << "CERTO, objetivo encontrado: " << objetivo.nome << " = " << objetivo.valor;
-        else                    cout << "ERRADO, objetivo encontrado: " << objetivo2.nome << " = " << objetivo2.valor;
+        vector<variavel> MTprimeira = MT;
+        MT = MTantes;
+
+        if (achei == 0) objetivo2.valor = objetivo.valor; // procurar pelo objetivo
+        acheiFalse = EncadeamentoParaTras(objetivo2);
+
+        if (achei == 0)
+        {
+            int troca = acheiFalse;
+            acheiFalse = 1;
+            achei = troca;
+        }
+
+        ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
+
+        if (achei == 1)     MT = MTprimeira;
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(objetivo2);
     }
     cout << "-------------------" << endl;
 

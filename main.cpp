@@ -61,7 +61,7 @@ void addmap()
     perguntas.insert(make_pair("casco", "Seu animal tem casco?"));
     perguntas.insert(make_pair("bomvoador", "Seu animal eh um bom voador?"));
     perguntas.insert(make_pair("albatroz", "Seu animal eh um albatroz?"));
-    perguntas.insert(make_pair("rumina", "Seu animal eh uma rumina?"));
+    perguntas.insert(make_pair("rumina", "Seu animal rumina?"));
     perguntas.insert(make_pair("dedospares", "Seu animal tem quantidade de dedos pares?"));
 }
 
@@ -559,7 +559,7 @@ int EncadeamentoParaTrasAkinator(variavel objetivo)
                 if (regras[i].entao[j].first.valor.compare(objetivo.valor) == 0)
                 {
                     regrasComOObjetivo.push_back(i);
-                    cout << "regra: " << i << endl;
+                    //cout << "regra: " << i << endl;
                 }
             }
         }
@@ -567,7 +567,7 @@ int EncadeamentoParaTrasAkinator(variavel objetivo)
 
     for (int regra : regrasComOObjetivo)
     {
-        cout << "regra: " << regra << endl;
+        //cout << "regra: " << regra << endl;
         vector<variavel> se_variaveis;
         
         // pegar cada regra colocar no vetor o que esta no SE
@@ -588,18 +588,38 @@ int EncadeamentoParaTrasAkinator(variavel objetivo)
             if (achei == 1)     continue;
             else
             {
+                if (AchouNaMT(var) == 1)
+                {
+                    continue;
+                }
+                else if (AchouNaMT(var) == 0)
+                {
+                    deuBreak = true;
+                    break;
+                }
+
                 char resposta;
                 cout << perguntas[var.nome] << " [s / n] ";
                 cin >> resposta;
 
                 if (resposta == 's')
                 {
-                    AdicionarNaMT(var);
-                    continue;
+                    AdicionarNaMT({var.nome, "true"});
+
+                    if (var.valor.compare("true") == 0) {
+                        continue;
+                    }
+                    deuBreak = true;
+                    break;
                 }
                 else if (resposta == 'n')
                 {
-                    AdicionarNaMT(NegarVariavel(var));
+                    AdicionarNaMT({var.nome, "false"});
+
+                    // se eu adicionei o que estava procurando eu continuo
+                    if (var.valor.compare("false") == 0) {
+                        continue;
+                    }
                     deuBreak = true;
                     break;
                 }
@@ -617,7 +637,7 @@ int EncadeamentoParaTrasAkinator(variavel objetivo)
             varMT.valor = objetivo.valor;
 
             AdicionarNaMT(varMT);
-            cout << "[" << varMT.nome << " = " << varMT.valor << "]" << endl;
+            //cout << "[" << varMT.nome << " = " << varMT.valor << "]" << endl;
             return 1;
         }
     }
@@ -626,7 +646,37 @@ int EncadeamentoParaTrasAkinator(variavel objetivo)
 
 void akinator()
 {
-    EncadeamentoParaTrasAkinator(regras[0].entao[0].first);  
+    vector<variavel> objetivos = {
+        {"leopardo", "true"}, {"tigre", "true"}, {"zebra", "true"}, {"avestruz", "true"}, {"pinguim", "true"},
+        {"girafa", "true"}, {"galinha", "true"}, {"flamingo", "true"}, {"albatroz", "true"}
+    };
+
+    for (auto obj : objetivos)
+    {
+        if (EncadeamentoParaTrasAkinator(obj) == 1)
+        {
+            cout << perguntas[obj.nome] << " [s / n] ";
+            char resposta;
+            cin >> resposta;
+
+            if (resposta == 's') {
+                for (auto var : MT)
+                {
+                    cout << "[ " << var.nome << " = " << var.valor << " ]" << endl;
+                }
+                return;
+            } else {
+                continue;
+            }
+        }
+    }
+
+    for (auto var : MT)
+    {
+        cout << "[ " << var.nome << " = " << var.valor << " ]" << endl;
+    }
+
+    cout << "sinto muito nao existe esse animal na base de dados :/ " << endl;
     /*
     for (auto c : regras)
     {

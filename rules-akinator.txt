@@ -1,0 +1,23 @@
+SE carnivoro=true & coramarelotostado=true & manchasescuras=true ENTAO leopardo=true
+SE carnivoro=true & coramarelotostado=true & listraspretas=true ENTAO tigre=true
+SE ungulado=true & corbranca=true & listraspretas=true ENTAO zebra=true
+
+SE ave=true & pernaslongas=true & pescococomprido=true & pretoebranco=true ENTAO avestruz=true
+SE ave=true & voa=false & nada=true & pretoebranco=true ENTAO pinguim=true
+
+SE ungulado=true & pernaslongas=true & pescococomprido=true & coramarelotostado=true & manchasescuras=true ENTAO girafa=true
+SE ave=true & corpoarredondado=true & penasdensas=true & voa=false & domestico=true ENTAO galinha=true
+SE ave=true & pernaslongas=true & pescococomprido=true & caudacurta=true & corderosa=true ENTAO flamingo=true
+
+SE mamifero=true & dentespontiagudos=true & garras=true & olhosfrontais=true ENTAO carnivoro=true
+
+SE pelo=true ENTAO mamifero=true
+SE daleite=true ENTAO mamifero=true
+SE penas=true ENTAO ave=true
+
+SE voa=true & botaovos=true ENTAO ave=true
+SE mamifero=true & comecarne=true ENTAO carnivoro=true
+SE mamifero=true & casco=true ENTAO ungulado=true
+SE ave=true & bomvoador=true ENTAO albatroz=true
+
+SE mamifero=true & rumina=true & dedospares=true ENTAO ungulado=true

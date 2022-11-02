@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "utils/IsLower.cpp"
 #include "utils/readFile.cpp"
@@ -19,7 +20,52 @@ using namespace std;
 vector<variavel> MT;
 vector<regra> regras;
 
-vector<vector<string>> analyzer(vector<string> lines)
+map<string, string> perguntas;
+
+void addmap()
+{
+    perguntas.insert(make_pair("carnivoro", "Seu animal eh carnivoro?"));
+    perguntas.insert(make_pair("coramarelotostado", "Seu animal tem cor amarelo tostado?"));
+    perguntas.insert(make_pair("manchasescuras", "Seu animal tem manchas escuras?"));
+    perguntas.insert(make_pair("leopardo", "Seu animal eh um leopardo?"));
+    perguntas.insert(make_pair("listraspretas", "Seu animal tem listras pretas?"));
+    perguntas.insert(make_pair("tigre", "Seu animal eh um tigre?"));
+    perguntas.insert(make_pair("ungulado", "Seu animal eh ungulado?"));
+    perguntas.insert(make_pair("corbranca", "Seu animal tem cor branca?"));
+    perguntas.insert(make_pair("zebra", "Seu animal eh uma zebra?"));
+    perguntas.insert(make_pair("ave", "Seu animal eh uma ave?"));
+    perguntas.insert(make_pair("pernaslongas", "Seu animal tem pernas longas?"));
+    perguntas.insert(make_pair("pretoebranco", "Seu animal eh preto e branco?"));
+    perguntas.insert(make_pair("avestruz", "Seu animal eh um avestruz?"));
+    perguntas.insert(make_pair("voa", "Seu animal voa?"));
+    perguntas.insert(make_pair("nada", "Seu animal nada?"));
+    perguntas.insert(make_pair("pinguim", "Seu animal eh um pinguim?"));
+    perguntas.insert(make_pair("girafa", "Seu animal eh uma girafa?"));
+    perguntas.insert(make_pair("corpoarredondado", "Seu animal tem um corpo arredondado?"));
+    perguntas.insert(make_pair("penasdensas", "Seu animal tem penas densas?"));
+    perguntas.insert(make_pair("domestico", "Seu animal eh domestico?"));
+    perguntas.insert(make_pair("pescococomprido", "Seu animal tem pescococomprido"));
+    perguntas.insert(make_pair("galinha", "Seu animal eh uma galinha?"));
+    perguntas.insert(make_pair("caudacurta", "Seu animal tem cauda curta?"));
+    perguntas.insert(make_pair("corderosa", "Seu animal eh cor de rosa?"));
+    perguntas.insert(make_pair("flamingo", "Seu animal eh um flamingo?"));
+    perguntas.insert(make_pair("mamifero", "Seu animal eh um mamifero?"));
+    perguntas.insert(make_pair("dentespontiagudos", "Seu animal tem dentes pontiagudos?"));
+    perguntas.insert(make_pair("garras", "Seu animal tem garras?"));
+    perguntas.insert(make_pair("olhosfrontais", "Seu animal tem olhos frontais?"));
+    perguntas.insert(make_pair("pelo", "Seu animal tem pelos?"));
+    perguntas.insert(make_pair("daleite", "Seu animal da leite?"));
+    perguntas.insert(make_pair("penas", "Seu animal tem penas?"));
+    perguntas.insert(make_pair("botaovos", "Seu animal bota ovos?"));
+    perguntas.insert(make_pair("comecarne", "Seu animal come carne?"));
+    perguntas.insert(make_pair("casco", "Seu animal tem casco?"));
+    perguntas.insert(make_pair("bomvoador", "Seu animal eh um bom voador?"));
+    perguntas.insert(make_pair("albatroz", "Seu animal eh um albatroz?"));
+    perguntas.insert(make_pair("rumina", "Seu animal eh uma rumina?"));
+    perguntas.insert(make_pair("dedospares", "Seu animal tem quantidade de dedos pares?"));
+}
+
+vector<vector<string>> lexical(vector<string> lines)
 {
     vector<vector<string>> rules;
 
@@ -40,6 +86,24 @@ vector<vector<string>> analyzer(vector<string> lines)
     }
 
     return rules;
+}
+
+void syntatic(vector<vector<string>> rules)
+{
+    for (int i = 0; i < rules.size(); i++)
+    {
+        if (rules[i].size() == 0) continue;
+
+        int string_stopped = 0;
+        bool imInEntao = false;
+
+        while (string_stopped != WAS_ENTIRE_COMMAND_VERIFIED)
+        {
+            //AnalisadorSintatico
+            ReconhecerSe(rules[i], &string_stopped, i);
+        }
+        regras.push_back(ObterRegraAtual());
+    }
 }
 
 bool Regra_inaplicaveis(vector<int> usouRegra)
@@ -420,45 +484,19 @@ bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
     return achei == 1;
 }
 
-int main()
+void testarVariaveis()
 {
-    vector<string> lines = readFile("rules.txt");
-    vector<vector<string>> rules = analyzer(lines);
-
-    for (int i = 0; i < rules.size(); i++)
-    {
-        if (rules[i].size() == 0) continue;
-
-        int string_stopped = 0;
-        bool imInEntao = false;
-
-        while (string_stopped != WAS_ENTIRE_COMMAND_VERIFIED)
-        {
-            //AnalisadorSintatico
-            ReconhecerSe(rules[i], &string_stopped, i);
-        }
-        regras.push_back(ObterRegraAtual());
-    }
-
-    vector<string> facts = readFile("facts.txt");
-    vector<vector<string>> linhasFatos = analyzer(facts);
-
-    for (vector<string> r : linhasFatos)    AdicionarNaMT(ReconhecerVariavel(r));
-
     int qntVariaveis = 0;
     cout << "Digite quantas variaveis quer testar: ";
     cin >> qntVariaveis;
 
-    if (qntVariaveis == 0)
-    {
-        cout << "!!!! Digite um numero maior que 0 !!!!";
-        return 0;
-    }
+    if (qntVariaveis == 0)  throw runtime_error("Digite um numero maior que 0");
 
     vector<variavel> MTantes = MT;
-
     vector<variavel> objetivos;
+
     bool objetivosVerdadeiros = true;
+
     for (int i = 0; i < qntVariaveis; i++)
     {
         MT = MTantes;
@@ -469,14 +507,9 @@ int main()
         cout << "Digite o valor da variavel: ";
         cin >> objetivo.valor;
 
-        if (objetivo.valor.compare("true") != 0 && objetivo.valor.compare("false") != 0)
-        {
-            throw runtime_error("objetivo deve ser true ou false");
-        }
-        if (!EveryLetterIsLower(objetivo.nome))
-        {
-            throw runtime_error("variavel objetivo deve ter todas as letras minusculas");
-        }
+        if (objetivo.valor.compare("true") != 0 && objetivo.valor.compare("false") != 0)    throw runtime_error("objetivo deve ser true ou false");
+
+        if (!EveryLetterIsLower(objetivo.nome))     throw runtime_error("variavel objetivo deve ter todas as letras minusculas");
 
         objetivos.push_back(objetivo);
 
@@ -498,6 +531,143 @@ int main()
     if (objetivosVerdadeiros)   cout << " = TRUE";
     else    cout << " = FALSE";
     cout << "-------------------";
+}
 
+int EncadeamentoParaTrasAkinator(variavel objetivo)
+{
+    // verificar minha MT
+    switch (AchouNaMT(objetivo))
+    {
+        case 1:
+            return 1;
+        case 0:
+            return 0;
+        default:
+            break;
+    }
+
+    // pegar todas as regras que tem o meu objetivo no entao
+    vector<int> regrasComOObjetivo;
+
+    cout << "objetivo atual: " << objetivo.nome << " = " << objetivo.valor << endl;
+    for (int i = 0; i < regras.size(); i++)
+    {
+        for (int j = 0; j < regras[i].entao.size(); j++)
+        {
+            if (regras[i].entao[j].first.nome.compare(objetivo.nome) == 0)
+            {
+                if (regras[i].entao[j].first.valor.compare(objetivo.valor) == 0)
+                {
+                    regrasComOObjetivo.push_back(i);
+                    cout << "regra: " << i << endl;
+                }
+            }
+        }
+    }
+
+    for (int regra : regrasComOObjetivo)
+    {
+        cout << "regra: " << regra << endl;
+        vector<variavel> se_variaveis;
+        
+        // pegar cada regra colocar no vetor o que esta no SE
+        for (auto se_var : regras[regra].se)
+        {
+            se_variaveis.push_back(se_var.first);
+        }
+
+        bool deuBreak = false;
+        while (se_variaveis.size() != 0)
+        {
+            variavel var = se_variaveis.back();
+            cout << "VAR ATUAL: " << var.nome << " = " << var.valor << endl;
+            se_variaveis.pop_back();
+
+            int achei = EncadeamentoParaTrasAkinator(var);
+
+            if (achei == 1)     continue;
+            else
+            {
+                char resposta;
+                cout << perguntas[var.nome] << " [s / n] ";
+                cin >> resposta;
+
+                if (resposta == 's')
+                {
+                    AdicionarNaMT(var);
+                    continue;
+                }
+                else if (resposta == 'n')
+                {
+                    AdicionarNaMT(NegarVariavel(var));
+                    continue;
+                }
+                else
+                {
+                    throw runtime_error("digite s ou n (sim ou nao)");
+                }
+            }
+        }
+
+        variavel varMT;
+        varMT.nome = objetivo.nome;
+        varMT.valor = objetivo.valor;
+
+        AdicionarNaMT(varMT);
+        cout << "[" << varMT.nome << " = " << varMT.valor << "]" << endl;
+        return 1;
+    }
+    return -1;
+}
+
+void akinator()
+{
+    EncadeamentoParaTrasAkinator(regras[0].entao[0].first);  
+    /*
+    for (auto c : regras)
+    {
+        cout << "SE: " << endl;
+        for (auto se_var : c.se)
+        {
+            cout << "[" << perguntas[se_var.first.nome] << " = " << se_var.first.valor << "]" << endl;
+        }
+        cout << "ENTAO: " << endl;
+        for (auto entao_var : c.entao)
+        {
+            cout << "[" << perguntas[entao_var.first.nome] << " = " << entao_var.first.valor << "]" << endl;
+        }
+    }*/
+}
+
+int main()
+{
+    cout << "Digite: \n(1): para usar o modo adivinho\n(2): para usar consultar uma variavel" << endl;
+    vector<string> lines;
+
+    int escolha = 0;
+    cin >> escolha;
+
+    string conhecimento;
+    if (escolha == 1)   conhecimento = "rules-akinator.txt";
+    else if (escolha == 2)    conhecimento = "rules.txt";
+    else    return 0;
+
+    lines = readFile(conhecimento);
+    vector<vector<string>> rules = lexical(lines);
+    syntatic(rules);
+
+    if (escolha == 1)
+    {
+        addmap();
+        akinator();
+    }
+    else if (escolha == 2)
+    {
+        vector<string> facts = readFile("facts.txt");
+        vector<vector<string>> linhasFatos = lexical(facts);
+        for (vector<string> r : linhasFatos)    AdicionarNaMT(ReconhecerVariavel(r));
+
+        testarVariaveis();
+    }
     return 0;
 }

@@ -1,12 +1,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "utils/IsLower.cpp"
 #include "utils/readFile.cpp"
 #include "utils/negarVariavel.cpp"
-
+#include "utils/functionsMT.cpp"
 #include "utils/types.h"
 
 #include "functions/fatos.cpp"
@@ -15,55 +14,12 @@
 #include "functions/Sintatico/Estados.cpp"
 #include "functions/Sintatico/RegraAtual.cpp"
 
+#include "akinator/akinator.h"
+
 using namespace std;
 
 vector<variavel> MT;
 vector<regra> regras;
-
-map<string, string> perguntas;
-
-void addmap()
-{
-    perguntas.insert(make_pair("carnivoro", "Seu animal eh carnivoro?"));
-    perguntas.insert(make_pair("coramarelotostado", "Seu animal tem cor amarelo tostado?"));
-    perguntas.insert(make_pair("manchasescuras", "Seu animal tem manchas escuras?"));
-    perguntas.insert(make_pair("leopardo", "Seu animal eh um leopardo?"));
-    perguntas.insert(make_pair("listraspretas", "Seu animal tem listras pretas?"));
-    perguntas.insert(make_pair("tigre", "Seu animal eh um tigre?"));
-    perguntas.insert(make_pair("ungulado", "Seu animal eh ungulado?"));
-    perguntas.insert(make_pair("corbranca", "Seu animal tem cor branca?"));
-    perguntas.insert(make_pair("zebra", "Seu animal eh uma zebra?"));
-    perguntas.insert(make_pair("ave", "Seu animal eh uma ave?"));
-    perguntas.insert(make_pair("pernaslongas", "Seu animal tem pernas longas?"));
-    perguntas.insert(make_pair("pretoebranco", "Seu animal eh preto e branco?"));
-    perguntas.insert(make_pair("avestruz", "Seu animal eh um avestruz?"));
-    perguntas.insert(make_pair("voa", "Seu animal voa?"));
-    perguntas.insert(make_pair("nada", "Seu animal nada?"));
-    perguntas.insert(make_pair("pinguim", "Seu animal eh um pinguim?"));
-    perguntas.insert(make_pair("girafa", "Seu animal eh uma girafa?"));
-    perguntas.insert(make_pair("corpoarredondado", "Seu animal tem um corpo arredondado?"));
-    perguntas.insert(make_pair("penasdensas", "Seu animal tem penas densas?"));
-    perguntas.insert(make_pair("domestico", "Seu animal eh domestico?"));
-    perguntas.insert(make_pair("pescococomprido", "Seu animal tem pescococomprido"));
-    perguntas.insert(make_pair("galinha", "Seu animal eh uma galinha?"));
-    perguntas.insert(make_pair("caudacurta", "Seu animal tem cauda curta?"));
-    perguntas.insert(make_pair("corderosa", "Seu animal eh cor de rosa?"));
-    perguntas.insert(make_pair("flamingo", "Seu animal eh um flamingo?"));
-    perguntas.insert(make_pair("mamifero", "Seu animal eh um mamifero?"));
-    perguntas.insert(make_pair("dentespontiagudos", "Seu animal tem dentes pontiagudos?"));
-    perguntas.insert(make_pair("garras", "Seu animal tem garras?"));
-    perguntas.insert(make_pair("olhosfrontais", "Seu animal tem olhos frontais?"));
-    perguntas.insert(make_pair("pelo", "Seu animal tem pelos?"));
-    perguntas.insert(make_pair("daleite", "Seu animal da leite?"));
-    perguntas.insert(make_pair("penas", "Seu animal tem penas?"));
-    perguntas.insert(make_pair("botaovos", "Seu animal bota ovos?"));
-    perguntas.insert(make_pair("comecarne", "Seu animal come carne?"));
-    perguntas.insert(make_pair("casco", "Seu animal tem casco?"));
-    perguntas.insert(make_pair("bomvoador", "Seu animal eh um bom voador?"));
-    perguntas.insert(make_pair("albatroz", "Seu animal eh um albatroz?"));
-    perguntas.insert(make_pair("rumina", "Seu animal rumina?"));
-    perguntas.insert(make_pair("dedospares", "Seu animal tem quantidade de dedos pares?"));
-}
 
 vector<vector<string>> lexical(vector<string> lines)
 {
@@ -117,35 +73,10 @@ bool Regra_inaplicaveis(vector<int> usouRegra)
     return true;
 }
 
-int AchouNaMT(variavel var)
-{
-    for (int k = 0; k < MT.size(); k++)
-    {
-        if (MT[k].nome.compare(var.nome) == 0)
-        {
-            if (MT[k].valor.compare(var.valor) == 0)     return 1;
-            else    return 0;
-        }
-    }
-    return -1;
-}
-
-void AdicionarNaMT(variavel var)
-{
-    switch (AchouNaMT(var))
-    {
-        case -1:
-            MT.push_back(var);
-            return;
-        default:
-            return;
-    }
-}
-
 int EncadeamentoParaTras(variavel objetivo)
 {
     // verificar minha MT
-    switch (AchouNaMT(objetivo))
+    switch (AchouNaMT(&MT, objetivo))
     {
         case 1:
             return 1;
@@ -200,11 +131,7 @@ int EncadeamentoParaTras(variavel objetivo)
 
         if (!deuBreak)
         {
-            variavel varMT;
-            varMT.nome = objetivo.nome;
-            varMT.valor = objetivo.valor;
-
-            AdicionarNaMT(varMT);
+            AdicionarNaMT(&MT, {objetivo.nome, objetivo.valor});
             return 1;
         }
     }
@@ -218,7 +145,7 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
         bool deuBreak = false;
         for (auto se_var : regras[regras_N_Usadas[i]].se)
         {
-            int resultado = AchouNaMT(se_var.first);
+            int resultado = AchouNaMT(&MT, se_var.first);
             if (resultado == 1)     continue;
             else if (resultado == 0)
             {
@@ -231,7 +158,7 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
                 if (resultado == 0)
                 {
                     variavel adc = NegarVariavel(se_var.first);
-                    AdicionarNaMT(adc);
+                    AdicionarNaMT(&MT, adc);
                     deuBreak = true;
                     break;
                 }
@@ -240,12 +167,12 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
                 {
                     variavel adc = se_var.first;
                     adc.valor = "indeterminado";
-                    AdicionarNaMT(adc);
+                    AdicionarNaMT(&MT, adc);
                     deuBreak = true;
                     break;
                 }
 
-                AdicionarNaMT(se_var.first);
+                AdicionarNaMT(&MT, se_var.first);
             }
         }
 
@@ -259,11 +186,11 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
             // adicionar o que esta no entao na MT
             for (auto entao_var : regras[regras_N_Usadas[i]].entao)
             {
-                AdicionarNaMT(entao_var.first);
+                AdicionarNaMT(&MT, entao_var.first);
             }
         }
 
-        switch (AchouNaMT(objetivo))
+        switch (AchouNaMT(&MT, objetivo))
         {
             case 1:
                 return 1;
@@ -279,7 +206,7 @@ int EncadeamentoMisto(variavel objetivo, vector<int> regras_N_Usadas)
 
 int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
 {
-    int encontrei = AchouNaMT(objetivo);
+    int encontrei = AchouNaMT(&MT, objetivo);
     while (encontrei == -1)
     {
         if (regras_N_Usadas.size() == 0)
@@ -295,7 +222,7 @@ int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
             int c = 1;
             for (auto se_var : regras[regras_N_Usadas[i]].se)
             {
-                int resultado = AchouNaMT(se_var.first);
+                int resultado = AchouNaMT(&MT, se_var.first);
                 if (resultado == 1)
                 {
                     continue;
@@ -314,7 +241,7 @@ int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
                 // adicionar o que esta no entao para MT
                 for (auto entao_var : regras[regras_N_Usadas[i]].entao)
                 {
-                    AdicionarNaMT(entao_var.first);
+                    AdicionarNaMT(&MT, entao_var.first);
                 }
                 // descarto a regra
                 auto elem_to_remove = regras_N_Usadas.begin() + i;
@@ -338,7 +265,7 @@ int EncadeamentoParaFrente(variavel objetivo, vector<int> regras_N_Usadas)
             return -1;
         }
         usouRegra.clear();
-        encontrei = AchouNaMT(objetivo);
+        encontrei = AchouNaMT(&MT, objetivo);
     }
 
     if (encontrei == 1)     return 1;
@@ -411,7 +338,7 @@ bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
         ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
 
         if (achei == 1)     MT = MTprimeira;
-        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(objetivo2);
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(&MT, objetivo2);
     }
 
     else if (escolha == 1)
@@ -442,7 +369,7 @@ bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
         ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
 
         if (achei == 1)     MT = MTprimeira;
-        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(objetivo2);
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(&MT, objetivo2);
     }
 
     else if (escolha == 2)
@@ -471,7 +398,7 @@ bool ObjetivoVerdadeiro(int escolha, variavel objetivo)
         ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
 
         if (achei == 1)     MT = MTprimeira;
-        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(objetivo2);
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(&MT, objetivo2);
     }
     cout << "-------------------" << endl;
 
@@ -533,166 +460,6 @@ void testarVariaveis()
     cout << "-------------------";
 }
 
-int EncadeamentoParaTrasAkinator(variavel objetivo)
-{
-    // verificar minha MT
-    switch (AchouNaMT(objetivo))
-    {
-        case 1:
-            return 1;
-        case 0:
-            return 0;
-        default:
-            break;
-    }
-
-    // pegar todas as regras que tem o meu objetivo no entao
-    vector<int> regrasComOObjetivo;
-
-    cout << "objetivo atual: " << objetivo.nome << " = " << objetivo.valor << endl;
-    for (int i = 0; i < regras.size(); i++)
-    {
-        for (int j = 0; j < regras[i].entao.size(); j++)
-        {
-            if (regras[i].entao[j].first.nome.compare(objetivo.nome) == 0)
-            {
-                if (regras[i].entao[j].first.valor.compare(objetivo.valor) == 0)
-                {
-                    regrasComOObjetivo.push_back(i);
-                    //cout << "regra: " << i << endl;
-                }
-            }
-        }
-    }
-
-    for (int regra : regrasComOObjetivo)
-    {
-        //cout << "regra: " << regra << endl;
-        vector<variavel> se_variaveis;
-        
-        // pegar cada regra colocar no vetor o que esta no SE
-        for (auto se_var : regras[regra].se)
-        {
-            se_variaveis.push_back(se_var.first);
-        }
-
-        bool deuBreak = false;
-        while (se_variaveis.size() != 0)
-        {
-            variavel var = se_variaveis.back();
-            cout << "VAR ATUAL: " << var.nome << " = " << var.valor << endl;
-            se_variaveis.pop_back();
-
-            int achei = EncadeamentoParaTrasAkinator(var);
-
-            if (achei == 1)     continue;
-            else
-            {
-                if (AchouNaMT(var) == 1)
-                {
-                    continue;
-                }
-                else if (AchouNaMT(var) == 0)
-                {
-                    deuBreak = true;
-                    break;
-                }
-
-                char resposta;
-                cout << perguntas[var.nome] << " [s / n] ";
-                cin >> resposta;
-
-                if (resposta == 's')
-                {
-                    AdicionarNaMT({var.nome, "true"});
-
-                    if (var.valor.compare("true") == 0) {
-                        continue;
-                    }
-                    deuBreak = true;
-                    break;
-                }
-                else if (resposta == 'n')
-                {
-                    AdicionarNaMT({var.nome, "false"});
-
-                    // se eu adicionei o que estava procurando eu continuo
-                    if (var.valor.compare("false") == 0) {
-                        continue;
-                    }
-                    deuBreak = true;
-                    break;
-                }
-                else
-                {
-                    throw runtime_error("digite s ou n (sim ou nao)");
-                }
-            }
-        }
-
-        if (!deuBreak)
-        {
-            variavel varMT;
-            varMT.nome = objetivo.nome;
-            varMT.valor = objetivo.valor;
-
-            AdicionarNaMT(varMT);
-            //cout << "[" << varMT.nome << " = " << varMT.valor << "]" << endl;
-            return 1;
-        }
-    }
-    return -1;
-}
-
-void akinator()
-{
-    vector<variavel> objetivos = {
-        {"leopardo", "true"}, {"tigre", "true"}, {"zebra", "true"}, {"avestruz", "true"}, {"pinguim", "true"},
-        {"girafa", "true"}, {"galinha", "true"}, {"flamingo", "true"}, {"albatroz", "true"}
-    };
-
-    for (auto obj : objetivos)
-    {
-        if (EncadeamentoParaTrasAkinator(obj) == 1)
-        {
-            cout << perguntas[obj.nome] << " [s / n] ";
-            char resposta;
-            cin >> resposta;
-
-            if (resposta == 's') {
-                for (auto var : MT)
-                {
-                    cout << "[ " << var.nome << " = " << var.valor << " ]" << endl;
-                }
-                return;
-            } else {
-                continue;
-            }
-        }
-    }
-
-    for (auto var : MT)
-    {
-        cout << "[ " << var.nome << " = " << var.valor << " ]" << endl;
-    }
-
-    cout << "sinto muito nao existe esse animal na base de dados :/ " << endl;
-    /*
-    for (auto c : regras)
-    {
-        cout << "SE: " << endl;
-        for (auto se_var : c.se)
-        {
-            cout << "[" << perguntas[se_var.first.nome] << " = " << se_var.first.valor << "]" << endl;
-        }
-        cout << "ENTAO: " << endl;
-        for (auto entao_var : c.entao)
-        {
-            cout << "[" << perguntas[entao_var.first.nome] << " = " << entao_var.first.valor << "]" << endl;
-        }
-    }*/
-}
-
 int main()
 {
     cout << "Digite: \n(1): para usar o modo adivinho\n(2): para usar consultar uma variavel" << endl;
@@ -712,14 +479,13 @@ int main()
 
     if (escolha == 1)
     {
-        addmap();
-        akinator();
+        akinator(&regras);
     }
     else if (escolha == 2)
     {
         vector<string> facts = readFile("facts.txt");
         vector<vector<string>> linhasFatos = lexical(facts);
-        for (vector<string> r : linhasFatos)    AdicionarNaMT(ReconhecerVariavel(r));
+        for (vector<string> r : linhasFatos)    AdicionarNaMT(&MT, ReconhecerVariavel(r));
 
         testarVariaveis();
     }

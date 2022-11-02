@@ -600,7 +600,8 @@ int EncadeamentoParaTrasAkinator(variavel objetivo)
                 else if (resposta == 'n')
                 {
                     AdicionarNaMT(NegarVariavel(var));
-                    continue;
+                    deuBreak = true;
+                    break;
                 }
                 else
                 {
@@ -609,13 +610,16 @@ int EncadeamentoParaTrasAkinator(variavel objetivo)
             }
         }
 
-        variavel varMT;
-        varMT.nome = objetivo.nome;
-        varMT.valor = objetivo.valor;
+        if (!deuBreak)
+        {
+            variavel varMT;
+            varMT.nome = objetivo.nome;
+            varMT.valor = objetivo.valor;
 
-        AdicionarNaMT(varMT);
-        cout << "[" << varMT.nome << " = " << varMT.valor << "]" << endl;
-        return 1;
+            AdicionarNaMT(varMT);
+            cout << "[" << varMT.nome << " = " << varMT.valor << "]" << endl;
+            return 1;
+        }
     }
     return -1;
 }

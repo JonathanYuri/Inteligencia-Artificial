@@ -5,9 +5,14 @@
 #include "utils/IsLower.cpp"
 #include "utils/readFile.cpp"
 #include "utils/negarVariavel.cpp"
+
+#include "utils/types.h"
+
 #include "functions/fatos.cpp"
 #include "functions/lexico.cpp"
-#include "functions/sintaticoRegras.cpp"
+#include "functions/Sintatico/SyntaticAnalyzer.h"
+#include "functions/Sintatico/Estados.cpp"
+#include "functions/Sintatico/RegraAtual.cpp"
 
 using namespace std;
 
@@ -25,7 +30,7 @@ vector<vector<string>> analyzer(vector<string> lines)
         int character_stopped = 0;
         vector<string> rule;
 
-        while (character_stopped != -1)
+        while (character_stopped != WAS_ENTIRE_COMMAND_VERIFIED)
         {
             //AnalisadorLexico
             string token = EncaminharOperadorOuPalavra(line, &character_stopped);
@@ -427,10 +432,10 @@ int main()
         int string_stopped = 0;
         bool imInEntao = false;
 
-        while (string_stopped != -1)
+        while (string_stopped != WAS_ENTIRE_COMMAND_VERIFIED)
         {
             //AnalisadorSintatico
-            ChecarSeOuEntaoEncaminharOperadores(rules[i], &string_stopped, &imInEntao, i);
+            ReconhecerSe(rules[i], &string_stopped, i);
         }
         regras.push_back(ObterRegraAtual());
     }

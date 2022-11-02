@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "../utils/substring.cpp"
+#include "../utils/types.h"
 
 using namespace std;
 
@@ -13,7 +14,7 @@ string ReconhecerOperadores(string line, int *characterStopped)
 
     if (*characterStopped >= line.length())
     {
-        *characterStopped = -1;
+        *characterStopped = WAS_ENTIRE_COMMAND_VERIFIED;
         if (line[*characterStopped] == '&' || line[*characterStopped] == '=')   return op;
         throw runtime_error("caractere nao reconhecido " + line[*characterStopped]);
     }
@@ -50,7 +51,7 @@ string ReconhecerSeOuEntao(string line, int *characterStopped)
     }
 
     string subs = Substring(line, *characterStopped, line.length());
-    *characterStopped = -1;
+    *characterStopped = WAS_ENTIRE_COMMAND_VERIFIED;
     return subs;
 }
 
@@ -68,7 +69,7 @@ string MontarVarEValor(string line, int *characterStopped)
             }
             else
             {
-                *characterStopped = -1;
+                *characterStopped = WAS_ENTIRE_COMMAND_VERIFIED;
             }
             return subs;
         }
@@ -81,7 +82,7 @@ string MontarVarEValor(string line, int *characterStopped)
     }
 
     string subs = Substring(line, *characterStopped, line.length());
-    *characterStopped = -1;
+    *characterStopped = WAS_ENTIRE_COMMAND_VERIFIED;
     return subs;
 }
 

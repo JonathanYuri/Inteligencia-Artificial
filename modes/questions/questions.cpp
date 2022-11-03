@@ -1,6 +1,7 @@
 #include "../modes.h"
 #include "../../utils/negarVariavel.cpp"
 #include "../../utils/IsLower.cpp"
+#include "../../utils/functionsMT.cpp"
 
 bool Regra_inaplicaveis(vector<int> usouRegra)
 {

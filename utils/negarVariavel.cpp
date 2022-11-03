@@ -1,5 +1,7 @@
 #include "types.h"
 
+#pragma once
+
 variavel NegarVariavel(variavel var)
 {
     if (var.valor.compare("true") == 0)

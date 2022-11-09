@@ -3,7 +3,6 @@
 
 #include "../modes.h"
 #include "../../utils/types.h"
-#include "../../utils/functionsMT.cpp"
 
 #pragma once
 
@@ -56,10 +55,34 @@ map<string, string> create_questions()
     return perguntas;
 }
 
-int EncadeamentoParaTras(map<string, string> *perguntas, vector<regra> *regras, vector<variavel> *MT, variavel objetivo)
+int ProcurarNaMT(vector<pair<variavel, int>> *MT, variavel var)
 {
-    // verificar minha MTAk
-    switch (AchouNaMT(MT, objetivo))
+    for (int k = 0; k < MT->size(); k++)
+    {
+        if (MT->at(k).first.nome.compare(var.nome) == 0)
+        {
+            if (MT->at(k).first.valor.compare(var.valor) == 0)     return 1;
+            else    return 0;
+        }
+    }
+    return -1;
+}
+
+void AddMT(vector<pair<variavel, int>> *MT, variavel var, int regra)
+{
+    switch (ProcurarNaMT(MT, var))
+    {
+        case -1:
+            MT->push_back({var, regra});
+            return;
+        default:
+            return;
+    }
+}
+
+int EncadeamentoParaTras(map<string, string> *perguntas, vector<regra> *regras, vector<pair<variavel, int>> *MT, variavel objetivo)
+{
+    switch (ProcurarNaMT(MT, objetivo))
     {
         case 1:
             return 1;
@@ -107,11 +130,11 @@ int EncadeamentoParaTras(map<string, string> *perguntas, vector<regra> *regras, 
             if (achei == 1)     continue;
             else
             {
-                if (AchouNaMT(MT, var) == 1)
+                if (ProcurarNaMT(MT, var) == 1)
                 {
                     continue;
                 }
-                else if (AchouNaMT(MT, var) == 0)
+                else if (ProcurarNaMT(MT, var) == 0)
                 {
                     deuBreak = true;
                     break;
@@ -123,7 +146,7 @@ int EncadeamentoParaTras(map<string, string> *perguntas, vector<regra> *regras, 
 
                 if (resposta == 's')
                 {
-                    AdicionarNaMT(MT, {var.nome, "true"});
+                    AddMT(MT, {var.nome, "true"}, -1);
 
                     if (var.valor.compare("true") == 0) {
                         continue;
@@ -133,7 +156,7 @@ int EncadeamentoParaTras(map<string, string> *perguntas, vector<regra> *regras, 
                 }
                 else if (resposta == 'n')
                 {
-                    AdicionarNaMT(MT, {var.nome, "false"});
+                    AddMT(MT, {var.nome, "false"}, -1);
 
                     // se eu adicionei o que estava procurando eu continuo
                     if (var.valor.compare("false") == 0) {
@@ -151,22 +174,78 @@ int EncadeamentoParaTras(map<string, string> *perguntas, vector<regra> *regras, 
 
         if (!deuBreak)
         {
-            AdicionarNaMT(MT, {objetivo.nome, objetivo.valor});
+            AddMT(MT, {objetivo.nome, objetivo.valor}, regra);
             return 1;
         }
     }
     return -1;
 }
 
+void printarRegra(vector<regra> regras, int i)
+{
+    cout << "Regra " << i << ": ";
+    cout << "SE ";
+    for (int n = 0; n < regras[i].se.size(); n++)
+    {
+        cout << regras[i].se[n].first.nome << " = " << regras[i].se[n].first.valor;
+        if (n != regras[i].se.size() - 1)   cout << " & ";
+    }
+    cout << " ENTAO ";
+    for (int n = 0; n < regras[i].entao.size(); n++)
+    {
+        cout << regras[i].entao[n].first.nome << " = " << regras[i].entao[n].first.valor;
+        if (n != regras[i].entao.size() - 1)   cout << " & ";
+    }
+    cout << endl;
+}
+
+void printarMT(vector<pair<variavel, int>> MT, vector<regra> regras)
+{
+    vector<pair<variavel, int>> deduzidos;
+    vector<pair<variavel, int>> respondidos;
+
+    for (auto var : MT)
+    {
+        if (var.second == -1) {
+            respondidos.push_back(var);
+        } else {
+            deduzidos.push_back(var);
+        }
+    }
+
+    cout << endl << "Respondidos: " << endl << endl;
+    for (auto var : respondidos)
+    {
+        cout << "[ " << var.first.nome << " = " << var.first.valor << " ]" << endl;
+    }
+    cout << endl;
+    cout << "Deduzidos: " << endl << endl;
+    for (auto var : deduzidos)
+    {
+        cout << "[ " << var.first.nome << " = " << var.first.valor << " ], ";
+        cout << " Por causa da regra: " << var.second << endl;
+        printarRegra(regras, var.second);
+        cout << endl;
+    }
+}
+
 void akinator(vector<regra> regras)
 {
     map<string, string> perguntas = create_questions();
-    vector<variavel> MT;
+    vector<pair<variavel, int>> MT;
 
     vector<variavel> objetivos = {
         {"leopardo", "true"}, {"tigre", "true"}, {"zebra", "true"}, {"avestruz", "true"}, {"pinguim", "true"},
         {"girafa", "true"}, {"galinha", "true"}, {"flamingo", "true"}, {"albatroz", "true"}
     };
+
+    /*cout << "regras: " << endl;
+    for (int i = 0; i < regras.size(); i++)
+    {
+        printarRegra(regras, i);
+    }*/
+
+    cout << endl;
 
     for (auto obj : objetivos)
     {
@@ -177,10 +256,7 @@ void akinator(vector<regra> regras)
             cin >> resposta;
 
             if (resposta == 's') {
-                for (auto var : MT)
-                {
-                    cout << "[ " << var.nome << " = " << var.valor << " ]" << endl;
-                }
+                printarMT(MT, regras);
                 return;
             } else {
                 continue;
@@ -188,10 +264,6 @@ void akinator(vector<regra> regras)
         }
     }
 
-    for (auto var : MT)
-    {
-        cout << "[ " << var.nome << " = " << var.valor << " ]" << endl;
-    }
-
+    printarMT(MT, regras);
     cout << "sinto muito nao existe esse animal na base de dados :/ " << endl;
 }

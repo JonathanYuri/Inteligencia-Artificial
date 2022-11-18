@@ -88,8 +88,8 @@ int main()
         vector<string> facts = readFile("facts.txt");
         vector<vector<string>> linhasFatos = lexical(facts);
 
-        vector<variavel> MT;
-        for (vector<string> r : linhasFatos)    AdicionarNaMT(&MT, ReconhecerVariavel(r));
+        vector<pair<variavel, float>> MT;
+        for (vector<string> r : linhasFatos)    AdicionarNaMT(&MT, ReconhecerVariavel(r), 1.0f);
 
         questions(regras, MT);
     }

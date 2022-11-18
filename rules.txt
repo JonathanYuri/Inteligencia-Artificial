@@ -1,9 +1,9 @@
-SE k=true & l=true & m=true ENTAO i=true
-SE i=true & l=true & j=true ENTAO q=true
-SE c=true & d=true & e=true ENTAO b=true
-SE a=true & b=true ENTAO q=true
-SE l=true & n=true & o=true & p=true ENTAO q=true
-SE r=true & j=true & m=true ENTAO s=true
-SE g=true ENTAO f=true
-SE f=true & h=true ENTAO b=true
-SE c=true & h=true ENTAO r=true
+SE k=true & l=true & m=true ENTAO i=true FC=0.5
+SE i=true & l=true & j=true ENTAO q=true FC=0.5
+SE c=true & d=true & e=true ENTAO b=true FC=0.5
+SE a=true & b=true ENTAO q=true FC=0.5
+SE l=true & n=true & o=true & p=true ENTAO q=true FC=0.5
+SE r=true & j=true & m=true ENTAO s=true FC=0.5
+SE g=true ENTAO f=true FC=0.5
+SE f=true & h=true ENTAO b=true FC=0.5
+SE c=true & h=true ENTAO r=true FC=0.5

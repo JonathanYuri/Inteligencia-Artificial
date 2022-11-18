@@ -12,4 +12,5 @@ struct variavel{
 struct regra{
     vector<pair<variavel, string>> se;
     vector<pair<variavel, string>> entao;
+    float fc;
 };

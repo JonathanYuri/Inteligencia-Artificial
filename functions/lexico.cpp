@@ -26,7 +26,8 @@ string ReconhecerOperadores(string line, int *characterStopped)
             return op;
         }
     }
-    throw runtime_error("error de sintaxe, esperando letra minuscula depois de operador\nlinha: " + line + "caractere" + line[*characterStopped]);
+    return op;
+    //throw runtime_error("error de sintaxe, esperando letra minuscula depois de operador\nlinha: " + line + "caractere" + line[*characterStopped]);
 }
 
 string ReconhecerSeOuEntao(string line, int *characterStopped)
@@ -98,11 +99,37 @@ string EncaminharVarOuPalavra(string line, int *characterStopped)
     }
 }
 
+string ReconhecerPorcentagem(string line, int *characterStopped)
+{
+    int i = *characterStopped;
+    *characterStopped += 1;
+
+    if (line[*characterStopped] != '.')
+    {
+        throw runtime_error("Esperando . apos o numero");
+    }
+    *characterStopped += 1;
+    while (isdigit(line[*characterStopped]))
+    {
+        *characterStopped += 1;
+    }
+    return Substring(line, i, *characterStopped);
+}
+
 string EncaminharOperadorOuPalavra(string line, int *characterStopped)
 {
     if (isalpha(line[*characterStopped]))
     {
         return EncaminharVarOuPalavra(line, characterStopped);
+    }
+    else if (isdigit(line[*characterStopped]))
+    {
+        string a = ReconhecerPorcentagem(line, characterStopped);
+        if (*characterStopped >= line.length())
+        {
+            *characterStopped = WAS_ENTIRE_COMMAND_VERIFIED;
+        }
+        return a;
     }
     else
     {

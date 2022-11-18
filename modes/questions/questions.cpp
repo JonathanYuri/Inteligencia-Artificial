@@ -14,7 +14,18 @@ bool Regra_inaplicaveis(vector<int> usouRegra)
     return true;
 }
 
-int EncadeamentoParaTras(vector<regra> *regras, vector<variavel> *MT, variavel objetivo)
+float ProcurarCertezaMT(vector<pair<variavel, float>> *MT, variavel objetivo)
+{
+    for (int k = 0; k < MT->size(); k++)
+    {
+        if (MT->at(k).first.nome.compare(objetivo.nome) == 0)
+        {
+            if (MT->at(k).first.valor.compare(objetivo.valor) == 0)     return MT->at(k).second;
+        }
+    }
+}
+
+int EncadeamentoParaTras(vector<regra> *regras, vector<pair<variavel, float>> *MT, variavel objetivo)
 {
     // verificar minha MT
     switch (AchouNaMT(MT, objetivo))
@@ -55,6 +66,8 @@ int EncadeamentoParaTras(vector<regra> *regras, vector<variavel> *MT, variavel o
         }
 
         bool deuBreak = false;
+
+        float certeza = -1;
         while (se_variaveis.size() != 0)
         {
             variavel var = se_variaveis.back();
@@ -62,7 +75,15 @@ int EncadeamentoParaTras(vector<regra> *regras, vector<variavel> *MT, variavel o
 
             int achei = EncadeamentoParaTras(regras, MT, var);
 
-            if (achei == 1)     continue;
+            if (achei == 1)
+            {
+                if (certeza == -1) {
+                    certeza = ProcurarCertezaMT(MT, var);
+                } else {
+                    certeza = min(certeza, ProcurarCertezaMT(MT, var));
+                }
+                continue;
+            }
             else
             {
                 deuBreak = true;
@@ -72,14 +93,15 @@ int EncadeamentoParaTras(vector<regra> *regras, vector<variavel> *MT, variavel o
 
         if (!deuBreak)
         {
-            AdicionarNaMT(MT, {objetivo.nome, objetivo.valor});
+            cout << "certeza: " << certeza * regras->at(regra).fc << endl;
+            AdicionarNaMT(MT, {objetivo.nome, objetivo.valor}, certeza * regras->at(regra).fc);
             return 1;
         }
     }
     return -1;
 }
 
-int EncadeamentoMisto(vector<regra> *regras, vector<variavel> *MT, variavel objetivo)
+int EncadeamentoMisto(vector<regra> *regras, vector<pair<variavel, float>> *MT, variavel objetivo)
 {
     vector<int> regras_N_Usadas;
 
@@ -106,7 +128,7 @@ int EncadeamentoMisto(vector<regra> *regras, vector<variavel> *MT, variavel obje
                 if (resultado == 0)
                 {
                     variavel adc = NegarVariavel(se_var.first);
-                    AdicionarNaMT(MT, adc);
+                    AdicionarNaMT(MT, adc, 1.0f);
                     deuBreak = true;
                     break;
                 }
@@ -115,12 +137,12 @@ int EncadeamentoMisto(vector<regra> *regras, vector<variavel> *MT, variavel obje
                 {
                     variavel adc = se_var.first;
                     adc.valor = "indeterminado";
-                    AdicionarNaMT(MT, adc);
+                    AdicionarNaMT(MT, adc, 1.0f);
                     deuBreak = true;
                     break;
                 }
 
-                AdicionarNaMT(MT, se_var.first);
+                AdicionarNaMT(MT, se_var.first, 1.0f);
             }
         }
 
@@ -134,7 +156,7 @@ int EncadeamentoMisto(vector<regra> *regras, vector<variavel> *MT, variavel obje
             // adicionar o que esta no entao na MT
             for (auto entao_var : regras->at(regras_N_Usadas[i]).entao)
             {
-                AdicionarNaMT(MT, entao_var.first);
+                AdicionarNaMT(MT, entao_var.first, 1.0f);
             }
         }
 
@@ -152,7 +174,7 @@ int EncadeamentoMisto(vector<regra> *regras, vector<variavel> *MT, variavel obje
     return -1;
 }
 
-int EncadeamentoParaFrente(vector<regra> *regras, vector<variavel> *MT, variavel objetivo)
+int EncadeamentoParaFrente(vector<regra> *regras, vector<pair<variavel, float>> *MT, variavel objetivo)
 {
     vector<int> regras_N_Usadas;
     for (int i = 0; i < regras->size(); i++)
@@ -195,7 +217,7 @@ int EncadeamentoParaFrente(vector<regra> *regras, vector<variavel> *MT, variavel
                 // adicionar o que esta no entao para MT
                 for (auto entao_var : regras->at(regras_N_Usadas[i]).entao)
                 {
-                    AdicionarNaMT(MT, entao_var.first);
+                    AdicionarNaMT(MT, entao_var.first, 1.0f);
                 }
                 // descarto a regra
                 auto elem_to_remove = regras_N_Usadas.begin() + i;
@@ -271,9 +293,9 @@ void ChecarContradicao(variavel objetivo, variavel objetivo2, int achei, int ach
     }
 }
 
-bool ObjetivoVerdadeiro(vector<regra> *regras, vector<variavel> *MT, int escolha, variavel objetivo)
+bool ObjetivoVerdadeiro(vector<regra> *regras, vector<pair<variavel, float>> *MT, int escolha, variavel objetivo)
 {
-    vector<variavel> MTantes = *MT;
+    vector<pair<variavel, float>> MTantes = *MT;
 
     cout << "-------------------";
     int achei = 0, acheiFalse = 0;
@@ -284,7 +306,7 @@ bool ObjetivoVerdadeiro(vector<regra> *regras, vector<variavel> *MT, int escolha
         variavel objetivo2 = NegarVariavel(objetivo);
 
         // voltar a memória de trabalho
-        vector<variavel> MTprimeira = *MT;
+        vector<pair<variavel, float>> MTprimeira = *MT;
         *MT = MTantes;
 
         acheiFalse = EncadeamentoParaTras(regras, MT, objetivo2);
@@ -292,14 +314,14 @@ bool ObjetivoVerdadeiro(vector<regra> *regras, vector<variavel> *MT, int escolha
         ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
 
         if (achei == 1)     *MT = MTprimeira;
-        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(MT, objetivo2);
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(MT, objetivo2, 1.0f);
     }
 
     else if (escolha == 1)
     {
         achei = EncadeamentoParaFrente(regras, MT, objetivo);
 
-        vector<variavel> MTprimeira = *MT;
+        vector<pair<variavel, float>> MTprimeira = *MT;
         *MT = MTantes;
 
         variavel objetivo2 = NegarVariavel(objetivo);
@@ -316,7 +338,7 @@ bool ObjetivoVerdadeiro(vector<regra> *regras, vector<variavel> *MT, int escolha
         ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
 
         if (achei == 1)     *MT = MTprimeira;
-        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(MT, objetivo2);
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(MT, objetivo2, 1.0f);
     }
 
     else if (escolha == 2)
@@ -324,7 +346,7 @@ bool ObjetivoVerdadeiro(vector<regra> *regras, vector<variavel> *MT, int escolha
         achei = EncadeamentoMisto(regras, MT, objetivo);
         variavel objetivo2 = NegarVariavel(objetivo);
 
-        vector<variavel> MTprimeira = *MT;
+        vector<pair<variavel, float>> MTprimeira = *MT;
         *MT = MTantes;
 
         if (achei == 0) {
@@ -338,22 +360,22 @@ bool ObjetivoVerdadeiro(vector<regra> *regras, vector<variavel> *MT, int escolha
         ChecarContradicao(objetivo, objetivo2, achei, acheiFalse);
 
         if (achei == 1)     *MT = MTprimeira;
-        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(MT, objetivo2);
+        if (achei == 1 && acheiFalse == 1)  AdicionarNaMT(MT, objetivo2, 1.0f);
     }
     cout << "-------------------" << endl;
 
     cout << endl << "\tMemoria de Trabalho:" << endl;
     for (auto var : *MT)
     {
-        cout << var.nome << " = " << var.valor << endl;
+        cout << var.first.nome << " = " << var.first.valor << endl;
     }
 
     return achei == 1;
 }
 
-void TestarVariaveis(vector<regra> *regras, vector<pair<variavel, int>> objetivos, vector<variavel> *MT)
+void TestarVariaveis(vector<regra> *regras, vector<pair<variavel, int>> objetivos, vector<pair<variavel, float>> *MT)
 {
-    vector<variavel> MTantes = *MT;
+    vector<pair<variavel, float>> MTantes = *MT;
 
     bool objetivosVerdadeiros = true;
 
@@ -364,6 +386,8 @@ void TestarVariaveis(vector<regra> *regras, vector<pair<variavel, int>> objetivo
         bool objVerdadeiro = ObjetivoVerdadeiro(regras, MT, obj.second, obj.first);
         if (!objVerdadeiro)     objetivosVerdadeiros = false;
         cout << endl;
+
+        cout << "Certeza " << obj.first.nome << " = " << obj.first.valor << " -> " << ProcurarCertezaMT(MT, obj.first) << endl;
     }
 
     cout << "-------------------";
@@ -401,7 +425,7 @@ vector<pair<variavel, int>> LerVariaveis(int qntVariaveis)
     return variaveis;
 }
 
-void questions(vector<regra> regras, vector<variavel> MT)
+void questions(vector<regra> regras, vector<pair<variavel, float>> MT)
 {
     int qntVariaveis = 0;
     cout << "Digite quantas variaveis quer testar: ";

@@ -229,6 +229,70 @@ void printarMT(vector<pair<variavel, int>> MT, vector<regra> regras)
     }
 }
 
+bool exist_in_vector(vector<variavel> vetor, variavel var)
+{
+    for (variavel v : vetor)
+    {
+        if (var.nome.compare(v.nome) == 0 && var.valor.compare(v.valor) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void chute(vector<pair<variavel, int>> *MT, vector<regra> regras, vector<variavel> objetivos)
+{
+    // 1 variavel objetivo so vai poder aparecer em uma regra
+    map<string, vector<variavel>> dependencias;
+
+    for (auto regra : regras)
+    {
+        for (auto var_entao : regra.entao)
+        {
+            if (exist_in_vector(objetivos, var_entao.first))
+            {
+                // adc variaveis do se
+                vector<variavel> se;
+                for (auto var_se : regra.se)
+                {
+                    se.push_back(var_se.first);
+                }
+
+                //dependencias.insert(make_pair(var_entao.first, "se"));
+                dependencias[var_entao.first.nome] = se;
+                continue; // 1 variavel objetivo so vai poder aparecer em uma regra
+            }
+        }
+    }
+
+    map<string, float> porcentagens;
+    for (auto iter = dependencias.begin(); iter != dependencias.end(); ++iter){
+        float qnt_certos = 0;
+        for (auto se : iter->second)
+        {
+            //cout << se.nome << " = " << se.valor << endl;
+            if (ProcurarNaMT(MT, se) == 1) {
+                //cout << "variavel " << se.nome << " = " << se.valor << " esta certa" << endl;
+                qnt_certos += 1;
+            }
+        }
+        //cout << "porcentagem de " << iter->first << " = " << (qnt_certos / (iter->second.size() * 1.0f)) << endl;
+        porcentagens[iter->first] = (qnt_certos / iter->second.size());
+    }
+
+    pair<string, float> maior_acerto = {"Nenhum", .0f};
+    for (auto iter = porcentagens.begin(); iter != porcentagens.end(); ++iter){
+        if (iter->second >= maior_acerto.second) {
+            maior_acerto.first = iter->first;
+            maior_acerto.second = iter->second;
+        }
+    }
+
+    cout << endl << "Nao existe um animal na base de dados que se encaixe com o descrito, mas" << endl;
+    cout << "A maior probabilidade eh desse animal ser um(a) " << maior_acerto.first << " com probabilidade de: " << maior_acerto.second << endl;
+}
+
 void akinator(vector<regra> regras)
 {
     map<string, string> perguntas = create_questions();
@@ -264,6 +328,7 @@ void akinator(vector<regra> regras)
         }
     }
 
-    printarMT(MT, regras);
-    cout << "sinto muito nao existe esse animal na base de dados :/ " << endl;
+    //printarMT(MT, regras);
+    
+    chute(&MT, regras, objetivos);
 }
